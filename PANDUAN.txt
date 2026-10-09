@@ -1,0 +1,57 @@
+==============================================
+   Ayeraa Save Downloader  v1.0.0
+   Download video & audio dari semua platform
+==============================================
+
+CARA PAKAI
+----------
+1. Ekstrak SELURUH isi zip ini ke satu folder (misal: D:\AyeraaSave).
+   PENTING: jangan jalankan langsung dari dalam zip.
+2. Klik 2x "Ayeraa Save Downloader.exe".
+3. Salin link video -> klik "Tempel" (atau Ctrl+V lalu Enter).
+4. Pilih format (Video MP4 / Audio MP3 / Audio M4A) dan kualitas.
+5. Klik "Download". File tersimpan di folder:  Downloads\AyeraaSave
+
+ISI FOLDER
+----------
+  Ayeraa Save Downloader.exe -> aplikasi utama (FFmpeg sudah termasuk di dalamnya)
+  deno.exe                 -> JavaScript runtime, dibutuhkan YouTube agar
+                              semua kualitas (sampai 4K) tersedia.
+                              JANGAN dihapus / dipindah, harus satu folder
+                              dengan file .exe.
+  source\                  -> kode sumber (opsional, untuk build ulang)
+
+PLATFORM YANG DIDUKUNG
+----------------------
+YouTube, YouTube Music, TikTok, Instagram, Facebook, X/Twitter, Threads,
+Vimeo, Dailymotion, SoundCloud, Twitch, Reddit, Pinterest, Bilibili,
+dan 1000+ situs lainnya.
+
+PERTAMA KALI DIJALANKAN
+-----------------------
+- Windows SmartScreen mungkin muncul ("Windows protected your PC") karena
+  aplikasi tidak bertanda tangan digital. Klik "More info" -> "Run anyway".
+- Pembukaan pertama agak lama (5-15 detik) karena aplikasi menyiapkan
+  file internalnya. Selanjutnya lebih cepat.
+- Jika antivirus memblokir, tambahkan folder ini ke pengecualian (exclusion).
+
+TIPS & MASALAH UMUM
+-------------------
+- Instagram / Facebook / video privat gagal?
+  Login ke situs tersebut di browser (disarankan Firefox), lalu di aplikasi
+  pilih browser itu pada opsi "Cookies dari browser". Kalau memakai
+  Chrome/Edge, tutup dulu browsernya sebelum download.
+- Tiba-tiba semua download dari satu situs error?
+  Biasanya situs tersebut baru berubah. Minta versi terbaru / build ulang
+  dari folder source (jalankan build.bat).
+- Ganti lokasi simpan: tombol "Ganti folder" di bagian bawah aplikasi.
+
+PRIVASI
+-------
+Aplikasi berjalan 100% lokal di laptop Anda. Video diunduh langsung dari
+platform aslinya, tanpa server perantara, tanpa iklan, tanpa pelacakan.
+
+Gunakan secara bertanggung jawab: hanya unduh konten yang Anda miliki
+haknya atau diizinkan oleh pemiliknya.
+
+Persyaratan: Windows 10 / 11 (64-bit), koneksi internet.

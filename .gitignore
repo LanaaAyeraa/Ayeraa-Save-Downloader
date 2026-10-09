@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# PyInstaller / Build
+build/
+dist/
+*.spec
+
+# Binaries & Archives
+bin/deno.exe
+*.zip
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

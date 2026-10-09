@@ -1,0 +1,38 @@
+============================================================
+   CARA PASANG AYERAA SAVE DOWNLOADER DI HP ANDROID
+============================================================
+
+Ada 2 pilihan installer APK di folder ini (keduanya berbasis yt-dlp & bebas iklan):
+
+1. Ayeraa-Save-Downloader.apk (41 MB) - REKOMENDASI UTAMA
+   - Tampilan Material You sangat modern, bersih, tanpa iklan
+   - Cukup bagikan (Share) link video dari YouTube / TikTok / IG langsung ke aplikasi
+   - Bisa pilih resolusi video (sampai 4K) atau ubah ke Audio MP3 / M4A
+
+2. Ayeraa-Save-Downloader-Pro.apk (65 MB) - FITUR LENGKAP
+   - Fitur terlengkap: pemotong audio/video, download batch, kustomisasi format mendalam
+
+------------------------------------------------------------
+LANGKAH MEMINDAHKAN & MEMASANG KE HP ANDROID:
+------------------------------------------------------------
+
+CARA 1 (Paling Mudah via WhatsApp / Telegram / Quick Share):
+1. Kirim file "Ayeraa-Save-Downloader.apk" ke HP Anda lewat WhatsApp Web, Telegram Saved Messages, atau kabel data USB.
+2. Di HP Android, buka file .apk yang sudah diterima.
+3. Jika muncul peringatan "Izinkan instalasi dari sumber tidak dikenal" (Unknown Sources), pilih "Izinkan" / "Allow".
+4. Klik "Install" / "Pasang".
+5. Selesai! Buka aplikasinya.
+
+CARA 2 (Menggunakan Kabel Data USB):
+1. Hubungkan HP ke laptop dengan kabel USB.
+2. Di HP, pilih mode transfer file (MTP / File Transfer).
+3. Buka File Explorer di laptop, salin file APK ke folder "Download" di HP.
+4. Buka aplikasi "File Manager" / "File Saya" di HP Android, cari file APK lalu pasang.
+
+------------------------------------------------------------
+CARA PAKAI APLIKASI SEAL DI ANDROID:
+------------------------------------------------------------
+- Buka video di YouTube / TikTok / Instagram / Twitter / Facebook.
+- Klik tombol "Share" (Bagikan) -> Pilih aplikasi "Seal".
+- Otomatis link terinput, Anda tinggal pilih Video atau Audio, lalu klik tombol download!
+============================================================
