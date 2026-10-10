@@ -26,9 +26,11 @@ Pilih installer sesuai kebutuhan Anda:
 - Download **playlist** utuh (YouTube, SoundCloud, dll.)
 - **Cookies dari browser** untuk konten yang butuh login (Instagram, Facebook, video privat)
 - FFmpeg & Deno **sudah termasuk** (tidak perlu install terpisah)
-- **Dukungan Android**:
-  - **APK Siap Pakai di HP**: File installer di folder `android/` (`Ayeraa-Save-Downloader.apk`).
-  - **Mode Web Server di HP**: Klik "📱 Buka di HP" atau jalankan `run_web.bat` untuk membuka UI mobile lewat browser HP di Wi-Fi yang sama!
+- **Dukungan Android & Mobile Modern (Mori Engine + shadcn/ui)**:
+  - **Arsitektur Baru**: UI modern berbasis **shadcn/ui** (React 19 + Tailwind CSS + Lucide Icons) dengan backend client-side extractor tanpa iklan.
+  - **Capacitor Android Project**: Tersedia di folder `mobile/` dengan native bridge, foreground notification, and automatic gallery media scanning.
+  - **Build APK Otomatis**: Dilengkapi GitHub Actions CI (`.github/workflows/build-android.yml`) untuk build APK cloud.
+  - **Jalankan Preview Web Mobile**: Klik ganda `run_mobile_web.bat` atau `cd mobile && npm run dev` untuk membuka antarmuka mobile di browser!
 - Tombol **Update engine** agar tetap kompatibel saat situs berubah
 
 ## Cara menjalankan (dari source)

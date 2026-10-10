@@ -18,6 +18,13 @@ dist-installer/
 bin/deno.exe
 *.zip
 
+# Node / Mobile
+node_modules/
+mobile/node_modules/
+mobile/dist/
+mobile/android/.gradle/
+mobile/android/app/build/
+
 # OS / Editor
 .DS_Store
 Thumbs.db
