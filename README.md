@@ -10,10 +10,11 @@ Pilih installer sesuai kebutuhan Anda:
 
 | Perangkat | Format | Link Download | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **Windows** | **Installer .EXE (Rekomendasi)** | [**Ayeraa-Save-Downloader-Setup.exe**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.0.0/Ayeraa-Save-Downloader-Setup.exe) (90 MB) | Tinggal klik 2x, otomatis pasang shortcut di Desktop & Start Menu |
-| **Windows** | Portable ZIP | [**Ayeraa-Save-Downloader-Windows.zip**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.0.0/Ayeraa-Save-Downloader-Windows.zip) (100 MB) | Versi portable tanpa install |
-| **Android** | Installer APK | [**Ayeraa-Save-Downloader.apk**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/raw/main/android/Ayeraa-Save-Downloader.apk) (41 MB) | Material You, tanpa iklan, share link langsung |
-| **Android** | APK Pro | [**Ayeraa-Save-Downloader-Pro.apk**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/raw/main/android/Ayeraa-Save-Downloader-Pro.apk) (65 MB) | Fitur potong audio/video & batch format |
+| **Windows** | **Installer .EXE (Rekomendasi)** | [**Ayeraa-Save-Downloader-Setup.exe**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Setup.exe) (90 MB) | Tinggal klik 2x, otomatis pasang shortcut di Desktop & Start Menu |
+| **Windows** | Portable ZIP | [**Ayeraa-Save-Downloader-Windows.zip**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Windows.zip) (100 MB) | Versi portable tanpa install |
+| **Android** | Installer APK | [**Ayeraa-Save-Downloader.apk**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader.apk) (41 MB) | Material You, tanpa iklan, share link langsung |
+| **Android** | APK Pro | [**Ayeraa-Save-Downloader-Pro.apk**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Pro.apk) (65 MB) | Fitur potong audio/video & batch format |
+| **Android (New)** | Project Mobile shadcn/ui | [**Ayeraa-Save-Downloader-Mobile-shadcn.zip**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Mobile-shadcn.zip) (1 MB) | Engine Mori + UI shadcn/ui (Capacitor) |
 
 ---
 
