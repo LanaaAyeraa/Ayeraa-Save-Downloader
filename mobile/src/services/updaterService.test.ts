@@ -7,25 +7,30 @@ import {
 
 describe("updaterService - compareVersions", () => {
   it("correctly identifies newer version with 'v' prefix", () => {
-    expect(compareVersions("v4.4.1", "4.4.0")).toBeGreaterThan(0);
-    expect(compareVersions("4.5.0", "v4.4.0")).toBeGreaterThan(0);
-    expect(compareVersions("v5.0.0", "4.4.0")).toBeGreaterThan(0);
+    expect(compareVersions("v1.2.0", "1.1.0")).toBeGreaterThan(0);
+    expect(compareVersions("1.3.0", "v1.2.0")).toBeGreaterThan(0);
+    expect(compareVersions("v2.0.0", "1.2.0")).toBeGreaterThan(0);
+  });
+
+  it("upgrades legacy 4.x installs to v1.2.0", () => {
+    expect(compareVersions("v1.2.0", "4.4.0")).toBeGreaterThan(0);
+    expect(compareVersions("1.2.0", "4.4.0")).toBeGreaterThan(0);
   });
 
   it("correctly identifies equal versions", () => {
-    expect(compareVersions("v4.4.0", "4.4.0")).toBe(0);
-    expect(compareVersions("4.4", "4.4.0")).toBe(0);
+    expect(compareVersions("v1.2.0", "1.2.0")).toBe(0);
+    expect(compareVersions("1.2", "1.2.0")).toBe(0);
     expect(compareVersions("v1.0.0", "v1.0.0")).toBe(0);
   });
 
   it("correctly identifies older versions", () => {
-    expect(compareVersions("4.3.9", "4.4.0")).toBeLessThan(0);
+    expect(compareVersions("1.1.0", "1.2.0")).toBeLessThan(0);
     expect(compareVersions("v1.0.0", "1.1.0")).toBeLessThan(0);
   });
 
-  it("handles complex version strings", () => {
-    expect(compareVersions("v4.4.0-patch1", "4.4.0")).toBeGreaterThanOrEqual(0);
-    expect(compareVersions("4.4.10", "4.4.2")).toBeGreaterThan(0);
+  it("handles patch version increments", () => {
+    expect(compareVersions("v1.2.1", "1.2.0")).toBeGreaterThan(0);
+    expect(compareVersions("1.2.10", "1.2.2")).toBeGreaterThan(0);
   });
 });
 
@@ -62,13 +67,13 @@ describe("updaterService - findApkAsset", () => {
 
 describe("updaterService - parseReleaseUpdate", () => {
   const mockRelease = {
-    tag_name: "v4.5.0",
-    name: "Ayeraa Save Downloader v4.5.0",
+    tag_name: "v1.2.0",
+    name: "Ayeraa Save Downloader v1.2.0",
     body: "### What's new\n- Fast auto updates\n- Bug fixes",
     published_at: "2026-10-11T00:00:00Z",
     assets: [
       {
-        name: "Ayeraa-Save-Downloader-v4.5.0.apk",
+        name: "Ayeraa-Save-Downloader.apk",
         browser_download_url: "https://github.com/downloads/ayeraa.apk",
         size: 35000000,
       },
@@ -76,16 +81,16 @@ describe("updaterService - parseReleaseUpdate", () => {
   };
 
   it("detects available update when remote tag is higher", () => {
-    const update = parseReleaseUpdate(mockRelease, "4.4.0");
+    const update = parseReleaseUpdate(mockRelease, "1.1.0");
     expect(update).not.toBeNull();
     expect(update?.hasUpdate).toBe(true);
-    expect(update?.latestVersion).toBe("v4.5.0");
+    expect(update?.latestVersion).toBe("v1.2.0");
     expect(update?.apkUrl).toBe("https://github.com/downloads/ayeraa.apk");
     expect(update?.apkSize).toBe(35000000);
   });
 
   it("marks hasUpdate as false when already on the latest version", () => {
-    const update = parseReleaseUpdate(mockRelease, "4.5.0");
+    const update = parseReleaseUpdate(mockRelease, "1.2.0");
     expect(update).not.toBeNull();
     expect(update?.hasUpdate).toBe(false);
   });

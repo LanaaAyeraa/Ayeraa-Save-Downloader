@@ -1,5 +1,5 @@
 #define MyAppName "Ayeraa Save Downloader"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "LanaaAyeraa"
 #define MyAppURL "https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader"
 #define MyAppExeName "Ayeraa Save Downloader.exe"

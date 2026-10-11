@@ -1,4 +1,4 @@
-export const CURRENT_APP_VERSION = "4.4.0";
+export const CURRENT_APP_VERSION = "1.2.0";
 export const GITHUB_REPO = "LanaaAyeraa/Ayeraa-Save-Downloader";
 
 export interface ReleaseAsset {
@@ -32,15 +32,19 @@ declare global {
 }
 
 /**
- * Compare two semver strings (e.g. "v4.4.1" and "4.4.0").
+ * Compare two semver strings (e.g. "v1.2.0" and "1.1.0").
  * Returns:
  *   1 if a > b
  *  -1 if a < b
  *   0 if a == b
  */
 export function compareVersions(a: string, b: string): number {
-  const cleanA = a.replace(/^[vV]/, "").trim();
-  const cleanB = b.replace(/^[vV]/, "").trim();
+  let cleanA = a.replace(/^[vV]/, "").trim();
+  let cleanB = b.replace(/^[vV]/, "").trim();
+
+  // Normalize legacy Mori version strings (4.x) to 1.1.0 so they upgrade seamlessly
+  if (cleanA.startsWith("4.")) cleanA = "1.1.0";
+  if (cleanB.startsWith("4.")) cleanB = "1.1.0";
 
   // Split on dots or hyphens
   const partsA = cleanA.split(/[.-]/).map((p) => {
