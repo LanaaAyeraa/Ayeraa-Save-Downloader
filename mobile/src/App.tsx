@@ -1,15 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToastProvider } from "./components/ui/toast";
 import { Header } from "./components/Header";
 import { DownloaderView } from "./components/DownloaderView";
 import { HistoryView } from "./components/HistoryView";
 import { SettingsView } from "./components/SettingsView";
 import { BottomNav } from "./components/BottomNav";
+import { UpdateDialog } from "./components/UpdateDialog";
+import {
+  checkForUpdate,
+  isVersionIgnored,
+  type UpdateInfo,
+} from "./services/updaterService";
 
 export function AppContent() {
   const [activeTab, setActiveTab] = useState<"downloader" | "history" | "settings">(
     "downloader"
   );
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const autoCheck = localStorage.getItem("ayeraa_auto_check_update") !== "false";
+    if (autoCheck) {
+      // Delay slightly so initial UI renders immediately
+      const timer = setTimeout(async () => {
+        try {
+          const info = await checkForUpdate();
+          if (info && info.hasUpdate && !isVersionIgnored(info.latestVersion)) {
+            setUpdateInfo(info);
+            setIsUpdateDialogOpen(true);
+          }
+        } catch (e) {
+          console.warn("Auto update check failed:", e);
+        }
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleManualCheckUpdate = (info: UpdateInfo) => {
+    setUpdateInfo(info);
+    setIsUpdateDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-purple-500/20 selection:text-purple-300">
@@ -27,11 +59,20 @@ export function AppContent() {
       <main className="flex-1 w-full max-w-md mx-auto px-4 pt-4">
         {activeTab === "downloader" && <DownloaderView />}
         {activeTab === "history" && <HistoryView />}
-        {activeTab === "settings" && <SettingsView />}
+        {activeTab === "settings" && (
+          <SettingsView onUpdateAvailable={handleManualCheckUpdate} />
+        )}
       </main>
 
       {/* Fixed Bottom Navigation */}
       <BottomNav activeTab={activeTab} onChangeTab={setActiveTab} />
+
+      {/* In-App Auto Update Dialog */}
+      <UpdateDialog
+        updateInfo={updateInfo}
+        open={isUpdateDialogOpen}
+        onClose={() => setIsUpdateDialogOpen(false)}
+      />
     </div>
   );
 }

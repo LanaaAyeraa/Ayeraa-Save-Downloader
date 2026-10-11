@@ -22,3 +22,10 @@
 - Configure `capacitor.config.ts` for Ayeraa Save Downloader (`appId: com.ayeraa.downloader`).
 - Integrate Android native project with foreground download service and share intent receiver.
 - Setup GitHub Actions workflow `.github/workflows/android-build.yml` for automated cloud APK compilation and releases.
+
+## Ticket 05: In-App Seamless Auto-Update (No Reinstall Required)
+- Persistent PKCS#12 signing keystore (`release.keystore`) configured in `build.gradle` for both release and debug variants.
+- Android manifest permission `<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />`.
+- Native installer and download methods in `MainActivity.java` (`MoriMainBridge`).
+- Front-end `updaterService.ts` querying GitHub Releases API with semver resolution.
+- UI updater modal (shadcn/ui Dialog + Progress) in `App.tsx` and manual update check in `SettingsView.tsx`.

@@ -47,4 +47,15 @@ Build a high-performance Android mobile application inspired by **Mori** (`cofly
 - **Tab Navigation**:
   - `Downloader`: Main scraper & download view.
   - `History`: List of past downloads with open in gallery / share / delete actions.
-  - `Settings`: Download directory, auto-retry, default server sources, dark mode.
+  - `Settings`: Download directory, auto-retry, default server sources, dark mode, update checker.
+
+## 4. In-App Seamless Auto-Update Architecture
+- **Preserved Cryptographic Identity**: Fixed `release.keystore` used across all Gradle build types ensuring Android never triggers `INSTALL_FAILED_UPDATE_INCOMPATIBLE`.
+- **System Package Installer Integration**:
+  - `REQUEST_INSTALL_PACKAGES` permission in `AndroidManifest.xml`.
+  - Native `MoriMainBridge.downloadAndInstallApk(url)` streaming APK to application downloads cache.
+  - Android `FileProvider` triggering `Intent.ACTION_VIEW` (`application/vnd.android.package-archive`).
+- **Update Workflow UI**:
+  - Client-side GitHub Releases polling (`LanaaAyeraa/Ayeraa-Save-Downloader`).
+  - Semver comparison between current version and latest tag.
+  - In-app interactive dialog with release notes, download progress bar, and automatic installer launch.

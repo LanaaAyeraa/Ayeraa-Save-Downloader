@@ -39,6 +39,8 @@ android {
                 storePassword 'android123'
                 keyAlias 'mori'
                 keyPassword 'android123'
+                v1SigningEnabled true
+                v2SigningEnabled true
             }
         }
     }
@@ -50,10 +52,15 @@ android {
                 signingConfig signingConfigs.release
             }
         }
+        debug {
+            if (file('release.keystore').exists()) {
+                signingConfig signingConfigs.release
+            }
+        }
     }
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "Mori v${variant.versionName}.apk"
+            outputFileName = "Ayeraa Save Downloader v${variant.versionName}.apk"
         }
     }
 }

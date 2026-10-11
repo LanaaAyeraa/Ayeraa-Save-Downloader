@@ -2,13 +2,26 @@ import { useState } from "react";
 import {
   Sliders,
   Vibrate,
+  RefreshCw,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import { useToast } from "./ui/toast";
 import { triggerHaptic } from "../services/downloadManager";
+import {
+  checkForUpdate,
+  type UpdateInfo,
+  CURRENT_APP_VERSION,
+} from "../services/updaterService";
 
-export function SettingsView() {
+interface SettingsViewProps {
+  onUpdateAvailable?: (info: UpdateInfo) => void;
+}
+
+export function SettingsView({ onUpdateAvailable }: SettingsViewProps) {
   const { toast } = useToast();
 
   const [tiktokSource, setTiktokSource] = useState(
@@ -23,6 +36,10 @@ export function SettingsView() {
   const [hapticEnabled, setHapticEnabled] = useState(
     localStorage.getItem("mori_haptic") !== "false"
   );
+  const [autoCheckUpdate, setAutoCheckUpdate] = useState(
+    localStorage.getItem("ayeraa_auto_check_update") !== "false"
+  );
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   const handleSourceChange = (key: string, val: string, setter: (v: string) => void) => {
     setter(val);
@@ -38,6 +55,49 @@ export function SettingsView() {
     triggerHaptic("medium");
   };
 
+  const toggleAutoCheckUpdate = () => {
+    const nextVal = !autoCheckUpdate;
+    setAutoCheckUpdate(nextVal);
+    localStorage.setItem("ayeraa_auto_check_update", nextVal ? "true" : "false");
+    triggerHaptic("medium");
+    toast({
+      title: nextVal ? "Pemeriksaan otomatis diaktifkan" : "Pemeriksaan otomatis dinonaktifkan",
+      type: "info",
+    });
+  };
+
+  const handleManualCheck = async () => {
+    setCheckingUpdate(true);
+    triggerHaptic("medium");
+    try {
+      const info = await checkForUpdate(CURRENT_APP_VERSION);
+      if (info && info.hasUpdate) {
+        toast({
+          title: "Pembaruan Ditemukan!",
+          description: `Versi ${info.latestVersion} siap dipasang.`,
+          type: "success",
+        });
+        if (onUpdateAvailable) {
+          onUpdateAvailable(info);
+        }
+      } else {
+        toast({
+          title: "Sudah Versi Terbaru",
+          description: `Aplikasi Anda (v${CURRENT_APP_VERSION}) adalah versi paling mutakhir.`,
+          type: "info",
+        });
+      }
+    } catch {
+      toast({
+        title: "Gagal memeriksa pembaruan",
+        description: "Periksa koneksi internet Anda.",
+        type: "error",
+      });
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-5 pb-24">
       {/* Engine & Source Selection */}
@@ -48,7 +108,7 @@ export function SettingsView() {
             <span>Extractor Servers</span>
           </CardTitle>
           <CardDescription>
-            Choose fallback servers in case one gets rate-limited.
+            Pilih server cadangan jika salah satu server mengalami limitasi.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -108,6 +168,55 @@ export function SettingsView() {
         </CardContent>
       </Card>
 
+      {/* Auto-Update & Version Manager */}
+      <Card className="border-border/70 bg-card/90">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-purple-400" />
+              <span>Pembaruan Aplikasi</span>
+            </div>
+            <Badge variant="outline" className="text-[10px] font-semibold text-emerald-400 border-emerald-500/40">
+              <CheckCircle2 className="h-3 w-3 mr-1 inline" /> In-Place Update
+            </Badge>
+          </CardTitle>
+          <CardDescription>
+            Update langsung di dalam aplikasi tanpa perlu instal ulang atau hapus APK sebelumnya.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium text-white">Cek Otomatis Saat Buka</span>
+              <p className="text-xs text-muted-foreground">Cek rilis terbaru setiap aplikasi dibuka</p>
+            </div>
+            <button
+              onClick={toggleAutoCheckUpdate}
+              className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${
+                autoCheckUpdate ? "bg-primary" : "bg-secondary"
+              }`}
+            >
+              <div
+                className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                  autoCheckUpdate ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="pt-2">
+            <Button
+              onClick={handleManualCheck}
+              disabled={checkingUpdate}
+              className="w-full bg-secondary hover:bg-secondary/80 border border-border text-foreground text-xs font-medium h-9 flex items-center justify-center gap-2"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${checkingUpdate ? "animate-spin text-purple-400" : ""}`} />
+              <span>{checkingUpdate ? "Memeriksa ke GitHub..." : "Periksa Pembaruan Sekarang"}</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Preferences */}
       <Card className="border-border/70 bg-card/90">
         <CardHeader className="pb-3">
@@ -120,7 +229,7 @@ export function SettingsView() {
           <div className="flex items-center justify-between">
             <div>
               <span className="text-sm font-medium text-white">Haptic Feedback</span>
-              <p className="text-xs text-muted-foreground">Vibrate on button clicks and completed downloads</p>
+              <p className="text-xs text-muted-foreground">Getar pada klik tombol dan unduhan selesai</p>
             </div>
             <button
               onClick={toggleHaptic}
@@ -148,7 +257,7 @@ export function SettingsView() {
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Version</span>
             <Badge variant="outline" className="text-[10px] font-bold">
-              v4.4.0 (shadcn/ui edition)
+              v{CURRENT_APP_VERSION} (shadcn/ui edition)
             </Badge>
           </div>
           <div className="flex items-center justify-between">

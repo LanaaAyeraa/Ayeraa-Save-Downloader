@@ -803,6 +803,158 @@ public class MainActivity extends BridgeActivity {
             } catch (Exception ignored) {}
             return false;
         }
+
+        @JavascriptInterface
+        public boolean canInstallPackages() {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                return getPackageManager().canRequestPackageInstalls();
+            }
+            return true;
+        }
+
+        @JavascriptInterface
+        public void requestInstallPackagesPermission() {
+            mainHandler.post(() -> {
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                        intent.setData(Uri.parse("package:" + getPackageName()));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+                } catch (Exception e) {
+                    Log.e("AyeraaUpdate", "requestInstallPackagesPermission error: " + e.getMessage());
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public boolean installApk(String rawPath) {
+            try {
+                if (rawPath == null || rawPath.isEmpty()) return false;
+                String cleanPath = rawPath.replaceFirst("^file://", "");
+                cleanPath = URLDecoder.decode(cleanPath, "UTF-8");
+                File apkFile = new File(cleanPath);
+                if (!apkFile.exists()) {
+                    Log.e("AyeraaUpdate", "APK file not found: " + cleanPath);
+                    return false;
+                }
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    if (!getPackageManager().canRequestPackageInstalls()) {
+                        Intent manageIntent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                        manageIntent.setData(Uri.parse("package:" + getPackageName()));
+                        manageIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(manageIntent);
+                        return false;
+                    }
+                }
+
+                Uri apkUri;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    apkUri = FileProvider.getUriForFile(
+                        MainActivity.this,
+                        getApplicationContext().getPackageName() + ".fileprovider",
+                        apkFile
+                    );
+                } else {
+                    apkUri = Uri.fromFile(apkFile);
+                }
+
+                Intent installIntent = new Intent(Intent.ACTION_VIEW);
+                installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(installIntent);
+                return true;
+            } catch (Exception e) {
+                Log.e("AyeraaUpdate", "installApk error: " + e.getMessage(), e);
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void downloadAndInstallApk(String apkUrl, String callbackId) {
+            executor.submit(() -> {
+                try {
+                    Request request = new Request.Builder()
+                        .url(apkUrl)
+                        .header("User-Agent", "Ayeraa-Save-Downloader/Android")
+                        .build();
+
+                    Response response = sharedClient.newCall(request).execute();
+                    if (!response.isSuccessful() || response.body() == null) {
+                        sendUpdateCallback(callbackId, false, "HTTP " + response.code());
+                        return;
+                    }
+
+                    long totalBytes = response.body().contentLength();
+                    File updateDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                    if (updateDir == null) updateDir = getCacheDir();
+                    File destApk = new File(updateDir, "Ayeraa-Save-Downloader-Update.apk");
+                    if (destApk.exists()) destApk.delete();
+
+                    InputStream is = response.body().byteStream();
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(destApk);
+                    byte[] buffer = new byte[32768];
+                    long downloaded = 0;
+                    int read;
+                    long lastReport = 0;
+
+                    while ((read = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, read);
+                        downloaded += read;
+                        long now = System.currentTimeMillis();
+                        if (now - lastReport > 200 || downloaded == totalBytes) {
+                            lastReport = now;
+                            int percent = totalBytes > 0 ? (int) ((downloaded * 100) / totalBytes) : -1;
+                            sendUpdateProgress(percent, downloaded, totalBytes);
+                        }
+                    }
+                    fos.flush();
+                    fos.close();
+                    is.close();
+
+                    sendUpdateProgress(100, downloaded, totalBytes);
+                    boolean launched = installApk(destApk.getAbsolutePath());
+                    sendUpdateCallback(callbackId, launched, launched ? null : "Izin instalasi sumber tidak dikenal diperlukan");
+                } catch (Exception e) {
+                    Log.e("AyeraaUpdate", "downloadAndInstallApk error: " + e.getMessage(), e);
+                    sendUpdateCallback(callbackId, false, e.getMessage());
+                }
+            });
+        }
+    }
+
+    private void sendUpdateProgress(int percent, long loaded, long total) {
+        mainHandler.post(() -> {
+            try {
+                WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+                if (webView != null) {
+                    String js = "if (window.__ayeraaUpdateProgress) { " +
+                                "  window.__ayeraaUpdateProgress(" + percent + ", " + loaded + ", " + total + "); " +
+                                "}";
+                    webView.evaluateJavascript(js, null);
+                }
+            } catch (Exception ignored) {}
+        });
+    }
+
+    private void sendUpdateCallback(String callbackId, boolean success, String error) {
+        mainHandler.post(() -> {
+            try {
+                WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+                if (webView != null && callbackId != null) {
+                    JSONObject obj = new JSONObject();
+                    obj.put("success", success);
+                    if (error != null) obj.put("error", error);
+                    String js = "if (window.__ayeraaUpdateCallback && window.__ayeraaUpdateCallback['" + callbackId + "']) { " +
+                                "  window.__ayeraaUpdateCallback['" + callbackId + "'](" + obj.toString() + "); " +
+                                "}";
+                    webView.evaluateJavascript(js, null);
+                }
+            } catch (Exception ignored) {}
+        });
     }
 
     @Override
