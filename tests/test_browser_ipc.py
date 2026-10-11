@@ -11,7 +11,7 @@ from allsave.ipc import IPCServer
 class TestIPCServer(unittest.TestCase):
     def setUp(self) -> None:
         self.received_urls: list[str] = []
-        self.server = IPCServer(on_grab_url=lambda u: self.received_urls.append(u))
+        self.server = IPCServer(on_grab_url=lambda u: self.received_urls.append(u), port=0)
         self.port = self.server.start()
 
     def tearDown(self) -> None:

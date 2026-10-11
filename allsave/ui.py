@@ -297,18 +297,10 @@ class App(ctk.CTk):
         top_right = ctk.CTkFrame(header, fg_color="transparent")
         top_right.grid(row=0, column=2, rowspan=2, sticky="ne")
 
-        actions = ctk.CTkFrame(top_right, fg_color="transparent")
-        actions.pack(side="top", anchor="e", pady=(0, 4))
-
         ctk.CTkButton(
-            actions, text="🌐 Browser (Alt+B)", font=_font(12, "bold"), fg_color="#7C3AED", hover_color="#6D28D9",
-            height=32, width=135, command=self.toggle_side_browser
-        ).pack(side="left", padx=(0, 6))
-
-        ctk.CTkButton(
-            actions, text="📱 Buka di HP", font=_font(12, "bold"), fg_color=CARD_2, hover_color=BORDER,
+            top_right, text="📱 Buka di HP", font=_font(12, "bold"), fg_color=CARD_2, hover_color=BORDER,
             border_width=1, border_color=BORDER, height=32, width=110, command=self.open_mobile_modal
-        ).pack(side="left")
+        ).pack(side="top", anchor="e", pady=(0, 4))
 
         ctk.CTkLabel(top_right, text=f"v{VERSION}", font=_font(11), text_color=MUTED).pack(side="top", anchor="e")
 

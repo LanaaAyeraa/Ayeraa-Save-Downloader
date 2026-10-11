@@ -11,6 +11,10 @@ from urllib.parse import parse_qs, urlparse
 logger = logging.getLogger("allsave.ipc")
 
 
+class _ExclusiveHTTPServer(ThreadingHTTPServer):
+    allow_reuse_address = False
+
+
 class IPCServer:
     """Provides a local loopback server for cross-process communication."""
 
@@ -95,11 +99,11 @@ class IPCServer:
 
         # Try desired port first; fallback to ephemeral port if occupied
         try:
-            self.server = ThreadingHTTPServer((self.host, self.requested_port), RequestHandler)
-            self.port = self.requested_port
+            self.server = _ExclusiveHTTPServer((self.host, self.requested_port), RequestHandler)
         except OSError:
-            self.server = ThreadingHTTPServer((self.host, 0), RequestHandler)
-            self.port = self.server.server_port
+            self.server = _ExclusiveHTTPServer((self.host, 0), RequestHandler)
+
+        self.port = self.server.server_address[1]
 
         self._thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self._thread.start()

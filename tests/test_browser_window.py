@@ -29,7 +29,7 @@ class TestBrowserWindow(unittest.TestCase):
 
     def test_browser_api_grab_url_notifies_ipc(self) -> None:
         received = []
-        server = IPCServer(on_grab_url=lambda u: received.append(u))
+        server = IPCServer(on_grab_url=lambda u: received.append(u), port=0)
         port = server.start()
         try:
             mock_win = MagicMock()

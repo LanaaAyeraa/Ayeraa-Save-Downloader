@@ -27,7 +27,7 @@ class HardtestBrowserNavigator(unittest.TestCase):
 
     def setUp(self) -> None:
         self.received_urls: list[str] = []
-        self.ipc_server = IPCServer(on_grab_url=lambda u: self.received_urls.append(u))
+        self.ipc_server = IPCServer(on_grab_url=lambda u: self.received_urls.append(u), port=0)
         self.port = self.ipc_server.start()
 
     def tearDown(self) -> None:
