@@ -17,6 +17,12 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+if "--browser" in sys.argv:
+    from allsave.browser_window import run_browser_cli
+
+    run_browser_cli()
+    sys.exit(0)
+
 from allsave.ui import App  # noqa: E402
 
 

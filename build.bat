@@ -11,7 +11,8 @@ python -m PyInstaller --noconfirm --clean --onefile --windowed ^
   --collect-all customtkinter ^
   --collect-all imageio_ffmpeg ^
   --collect-all yt_dlp_ejs ^
-  --collect-all tkinterweb ^
+  --collect-all webview ^
+  --collect-all pythonnet ^
   --collect-submodules yt_dlp ^
   main.py || goto :error
 

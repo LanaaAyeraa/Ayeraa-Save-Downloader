@@ -13,12 +13,7 @@ from typing import Optional
 import urllib.parse
 import webbrowser
 
-try:
-    from tkinterweb import HtmlFrame
-    HAS_TKINTERWEB = True
-except ImportError:
-    HtmlFrame = None
-    HAS_TKINTERWEB = False
+from .ipc import IPCServer
 
 import customtkinter as ctk
 from PIL import Image, ImageDraw
@@ -258,12 +253,9 @@ class App(ctk.CTk):
         self._web_server = None
         self._web_port = 8080
 
-        self._side_browser_open = False
-        self._side_browser_frame: Optional[ctk.CTkFrame] = None
-        self._html_browser = None
-        self._browser_url_entry: Optional[ctk.CTkEntry] = None
-        self._browser_history: list[str] = []
-        self._browser_history_idx = -1
+        self._browser_process: Optional[subprocess.Popen] = None
+        self._ipc_server = IPCServer(on_grab_url=self._on_ipc_grab_url)
+        self._ipc_port = self._ipc_server.start()
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
@@ -304,10 +296,20 @@ class App(ctk.CTk):
         
         top_right = ctk.CTkFrame(header, fg_color="transparent")
         top_right.grid(row=0, column=2, rowspan=2, sticky="ne")
+
+        actions = ctk.CTkFrame(top_right, fg_color="transparent")
+        actions.pack(side="top", anchor="e", pady=(0, 4))
+
         ctk.CTkButton(
-            top_right, text="📱 Buka di HP", font=_font(12, "bold"), fg_color=CARD_2, hover_color=BORDER,
+            actions, text="🌐 Browser (Alt+B)", font=_font(12, "bold"), fg_color="#7C3AED", hover_color="#6D28D9",
+            height=32, width=135, command=self.toggle_side_browser
+        ).pack(side="left", padx=(0, 6))
+
+        ctk.CTkButton(
+            actions, text="📱 Buka di HP", font=_font(12, "bold"), fg_color=CARD_2, hover_color=BORDER,
             border_width=1, border_color=BORDER, height=32, width=110, command=self.open_mobile_modal
-        ).pack(side="top", anchor="e", pady=(0, 4))
+        ).pack(side="left")
+
         ctk.CTkLabel(top_right, text=f"v{VERSION}", font=_font(11), text_color=MUTED).pack(side="top", anchor="e")
 
     def _build_input(self) -> None:
@@ -817,244 +819,65 @@ class App(ctk.CTk):
                 self._web_server.shutdown()
             except Exception:
                 pass
+        if self._browser_process and self._browser_process.poll() is None:
+            try:
+                self._browser_process.terminate()
+            except Exception:
+                pass
+        if hasattr(self, "_ipc_server") and self._ipc_server:
+            try:
+                self._ipc_server.stop()
+            except Exception:
+                pass
         self.executor.shutdown(wait=False, cancel_futures=True)
         self.destroy()
 
     # ----------------------------------------------------------- Side Browser #
     def toggle_side_browser(self) -> None:
-        """Fitur rahasia (Alt+B): Buka/tutup tab browser di side panel."""
-        if not self._side_browser_open:
-            self._open_side_browser()
-        else:
-            self._close_side_browser()
+        """Fitur rahasia (Alt+B): Buka browser modern Chromium (Edge WebView2)."""
+        if self._browser_process and self._browser_process.poll() is None:
+            return
 
-    def _open_side_browser(self) -> None:
-        if self._side_browser_frame is None:
-            self._build_side_browser()
+        cmd = [sys.executable]
+        if not getattr(sys, "frozen", False):
+            cmd.append(sys.argv[0] if sys.argv else "main.py")
+        cmd.extend(["--browser", "--ipc-port", str(self._ipc_port)])
 
-        cur_w = self.winfo_width()
-        cur_h = self.winfo_height()
-        if cur_w < 1350:
-            self.geometry(f"{cur_w + 500}x{max(cur_h, 720)}")
-
-        self.grid_columnconfigure(1, weight=1, minsize=460)
-        self._side_browser_frame.grid(row=0, column=1, rowspan=6, sticky="nsew", padx=(0, 24), pady=(20, 14))
-        self._side_browser_open = True
-
-        if hasattr(self, "_html_browser") and self._html_browser:
-            cur_url = self._browser_url_entry.get().strip() if self._browser_url_entry else ""
-            if not cur_url:
-                self._load_browser_homepage()
-
-    def _close_side_browser(self) -> None:
-        if self._side_browser_frame:
-            self._side_browser_frame.grid_remove()
-        self.grid_columnconfigure(1, weight=0, minsize=0)
-        cur_w = self.winfo_width()
-        cur_h = self.winfo_height()
-        if cur_w > 1250:
-            self.geometry(f"{max(960, cur_w - 500)}x{cur_h}")
-        self._side_browser_open = False
-
-    def _build_side_browser(self) -> None:
-        self._side_browser_frame = ctk.CTkFrame(
-            self, fg_color=CARD, corner_radius=16, border_width=1, border_color=BORDER
-        )
-        self._side_browser_frame.grid_columnconfigure(0, weight=1)
-        self._side_browser_frame.grid_rowconfigure(3, weight=1)
-
-        # 1. Header Frame
-        hdr = ctk.CTkFrame(self._side_browser_frame, fg_color="transparent")
-        hdr.grid(row=0, column=0, sticky="we", padx=14, pady=(12, 6))
-
-        title_box = ctk.CTkFrame(hdr, fg_color="transparent")
-        title_box.pack(side="left")
-        ctk.CTkLabel(title_box, text="🌐 Browser Navigator", font=_font(14, "bold"), text_color=TEXT).pack(side="left")
-        ctk.CTkLabel(
-            title_box, text="Alt+B", font=_font(10, "bold"), fg_color="#7C3AED", text_color="white",
-            corner_radius=6, width=44, height=18
-        ).pack(side="left", padx=8)
-
-        ctk.CTkButton(
-            hdr, text="✕", width=28, height=28, corner_radius=8, font=_font(13, "bold"),
-            fg_color=CARD_2, hover_color=BORDER, command=self.toggle_side_browser
-        ).pack(side="right")
-
-        # 2. Navigasi & URL Bar
-        nav = ctk.CTkFrame(self._side_browser_frame, fg_color="transparent")
-        nav.grid(row=1, column=0, sticky="we", padx=14, pady=4)
-        nav.grid_columnconfigure(3, weight=1)
-
-        ctk.CTkButton(
-            nav, text="◀", width=30, height=32, corner_radius=8, font=_font(11, "bold"),
-            fg_color=CARD_2, hover_color=BORDER, command=self._browser_go_back
-        ).grid(row=0, column=0, padx=(0, 4))
-
-        ctk.CTkButton(
-            nav, text="▶", width=30, height=32, corner_radius=8, font=_font(11, "bold"),
-            fg_color=CARD_2, hover_color=BORDER, command=self._browser_go_forward
-        ).grid(row=0, column=1, padx=(0, 4))
-
-        ctk.CTkButton(
-            nav, text="↻", width=30, height=32, corner_radius=8, font=_font(12, "bold"),
-            fg_color=CARD_2, hover_color=BORDER, command=self._browser_reload
-        ).grid(row=0, column=2, padx=(0, 6))
-
-        self._browser_url_entry = ctk.CTkEntry(
-            nav, height=34, font=_font(12), corner_radius=8, fg_color=BG, border_color=BORDER,
-            placeholder_text="Ketik URL atau pencarian… (Enter)"
-        )
-        self._browser_url_entry.grid(row=0, column=3, sticky="we", padx=(0, 6))
-        self._browser_url_entry.bind("<Return>", lambda _e: self._browser_navigate())
-
-        ctk.CTkButton(
-            nav, text="➔", width=36, height=32, corner_radius=8, font=_font(13, "bold"),
-            fg_color=ACCENT, hover_color=ACCENT_HOVER, command=self._browser_navigate
-        ).grid(row=0, column=4)
-
-        # 3. Action Bar & Quick Bookmarks
-        tools = ctk.CTkFrame(self._side_browser_frame, fg_color="transparent")
-        tools.grid(row=2, column=0, sticky="we", padx=14, pady=(4, 8))
-
-        ctk.CTkButton(
-            tools, text="📥 Ambil Link ke Input", font=_font(11, "bold"), fg_color=SUCCESS,
-            hover_color=SUCCESS_HOVER, height=28, corner_radius=8, command=self._browser_grab_url
-        ).pack(side="left", padx=(0, 6))
-
-        ctk.CTkButton(
-            tools, text="↗ Buka di Edge", font=_font(11), fg_color=CARD_2, hover_color=BORDER,
-            border_width=1, border_color=BORDER, height=28, corner_radius=8, command=self._browser_open_external
-        ).pack(side="left", padx=(0, 6))
-
-        bm_frame = ctk.CTkFrame(tools, fg_color="transparent")
-        bm_frame.pack(side="right")
-        bookmarks = [
-            ("YT", "https://m.youtube.com"),
-            ("TikTok", "https://www.tiktok.com"),
-            ("IG", "https://www.instagram.com"),
-            ("X", "https://x.com"),
-        ]
-        for label, u in bookmarks:
-            ctk.CTkButton(
-                bm_frame, text=label, width=42, height=26, font=_font(10, "bold"), fg_color=CARD_2,
-                hover_color=BORDER, corner_radius=6, command=lambda target=u: self._browser_navigate(target)
-            ).pack(side="left", padx=2)
-
-        # 4. Web View Container
-        if HAS_TKINTERWEB and HtmlFrame is not None:
-            self._html_browser = HtmlFrame(
-                self._side_browser_frame, dark_theme_enabled=True,
-                messages_enabled=False
+        try:
+            self._browser_process = subprocess.Popen(
+                cmd,
+                creationflags=CREATE_NO_WINDOW if getattr(sys, "frozen", False) else 0,
             )
-            self._html_browser.grid(row=3, column=0, sticky="nsew", padx=12, pady=(0, 12))
-        else:
-            fallback = ctk.CTkFrame(self._side_browser_frame, fg_color=BG, corner_radius=12)
-            fallback.grid(row=3, column=0, sticky="nsew", padx=12, pady=(0, 12))
-            ctk.CTkLabel(
-                fallback, text="Pustaka browser internal tidak aktif.\nGunakan tombol 'Buka di Edge' di atas.",
-                font=_font(12), text_color=MUTED
-            ).pack(expand=True)
+        except Exception as e:
+            messagebox.showerror(APP_NAME, f"Gagal membuka browser internal:\n{e}")
 
-    def _browser_navigate(self, target_url: Optional[str] = None) -> None:
-        url = target_url or (self._browser_url_entry.get() or "").strip() if self._browser_url_entry else ""
-        if not url:
+    def _on_ipc_grab_url(self, url: str) -> None:
+        """Dipanggil dari IPC server saat tombol 'Ambil Link' diklik di browser."""
+        self.after(0, lambda: self._apply_grabbed_url(url))
+
+    def _apply_grabbed_url(self, url: str) -> None:
+        clean = (url or "").strip()
+        if not clean:
             return
-        if not url.startswith("http://") and not url.startswith("https://") and not url.startswith("about:"):
-            if "." in url and " " not in url:
-                url = "https://" + url
-            else:
-                url = f"https://www.google.com/search?q={urllib.parse.quote(url)}"
 
-        if self._browser_url_entry:
-            self._browser_url_entry.delete(0, "end")
-            self._browser_url_entry.insert(0, url)
+        self.url_entry.delete(0, "end")
+        self.url_entry.insert(0, clean)
 
-        self._browser_history.append(url)
-        self._browser_history_idx = len(self._browser_history) - 1
+        try:
+            self.clipboard_clear()
+            self.clipboard_append(clean)
+            self.update()
+        except Exception:
+            pass
 
-        if self._html_browser:
-            threading.Thread(target=lambda: self._html_browser.load_website(url), daemon=True).start()
+        self.analyze()
 
-    def _browser_go_back(self) -> None:
-        if self._browser_history_idx > 0:
-            self._browser_history_idx -= 1
-            prev = self._browser_history[self._browser_history_idx]
-            if self._browser_url_entry:
-                self._browser_url_entry.delete(0, "end")
-                self._browser_url_entry.insert(0, prev)
-            if self._html_browser:
-                threading.Thread(target=lambda: self._html_browser.load_website(prev), daemon=True).start()
-
-    def _browser_go_forward(self) -> None:
-        if self._browser_history_idx < len(self._browser_history) - 1:
-            self._browser_history_idx += 1
-            nxt = self._browser_history[self._browser_history_idx]
-            if self._browser_url_entry:
-                self._browser_url_entry.delete(0, "end")
-                self._browser_url_entry.insert(0, nxt)
-            if self._html_browser:
-                threading.Thread(target=lambda: self._html_browser.load_website(nxt), daemon=True).start()
-
-    def _browser_reload(self) -> None:
-        if self._html_browser:
-            self._html_browser.reload()
-
-    def _browser_grab_url(self) -> None:
-        url = ""
-        if self._browser_url_entry:
-            url = (self._browser_url_entry.get() or "").strip()
-        if not url or url.startswith("about:"):
-            if hasattr(self, "_html_browser") and self._html_browser and hasattr(self._html_browser, "current_url"):
-                url = (self._html_browser.current_url or "").strip()
-        if url and not url.startswith("about:"):
-            self.url_entry.delete(0, "end")
-            self.url_entry.insert(0, url)
-            self.analyze()
-
-    def _browser_open_external(self) -> None:
-        url = (self._browser_url_entry.get() or "").strip() if self._browser_url_entry else ""
-        if not url or url.startswith("about:"):
-            url = "https://www.youtube.com"
-        webbrowser.open(url)
-
-    def _load_browser_homepage(self) -> None:
-        if not self._html_browser:
-            return
-        home_html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta charset="utf-8">
-        <style>
-          body { background: #0E1014; color: #EDEFF3; font-family: 'Segoe UI', system-ui, sans-serif; padding: 24px 16px; margin: 0; }
-          h2 { color: #FF3D6E; font-size: 18px; margin-top: 0; }
-          p { color: #8B93A1; font-size: 12px; line-height: 1.5; }
-          .card { background: #171A21; border: 1px solid #2A2F3A; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
-          .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-          a.btn { display: block; background: #1F232C; color: #EDEFF3; text-decoration: none; padding: 10px 8px; border-radius: 8px; text-align: center; font-size: 12px; font-weight: bold; border: 1px solid #2A2F3A; }
-          a.btn:hover { background: #2A2F3A; }
-          .tips { font-size: 11px; color: #22C55E; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); padding: 8px 12px; border-radius: 8px; margin-top: 16px; }
-        </style>
-        </head>
-        <body>
-          <h2>🌐 Ayeraa Secret Browser</h2>
-          <p>Fitur rahasia <b>Alt+B</b>. Jelajahi situs media dan salin link unduhan dalam satu aplikasi.</p>
-          <div class="card">
-            <span style="font-size: 13px; font-weight: bold; color: #EDEFF3;">Pintasan Cepat:</span>
-            <div class="btn-grid">
-              <a class="btn" href="https://m.youtube.com">🔴 YouTube</a>
-              <a class="btn" href="https://www.tiktok.com">⚫ TikTok</a>
-              <a class="btn" href="https://www.instagram.com">🟣 Instagram</a>
-              <a class="btn" href="https://x.com">🔵 X / Twitter</a>
-              <a class="btn" href="https://www.facebook.com">🔷 Facebook</a>
-              <a class="btn" href="https://www.google.com">🔍 Google</a>
-            </div>
-          </div>
-          <div class="tips">
-            💡 <b>Cara Pakai:</b> Buka link video apa saja di atas, lalu klik tombol hijau <b>📥 Ambil Link ke Input</b> di atas panel ini!
-          </div>
-        </body>
-        </html>
-        """
-        self._html_browser.load_html(home_html)
+        try:
+            self.deiconify()
+            self.attributes("-topmost", True)
+            self.attributes("-topmost", False)
+            self.lift()
+            self.focus_force()
+        except Exception:
+            pass
 

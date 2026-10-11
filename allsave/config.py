@@ -8,7 +8,7 @@ from pathlib import Path
 
 APP_NAME = "Ayeraa Save Downloader"
 APP_ID = "AyeraaSaveDownloader"
-VERSION = "1.0.0"
+VERSION = "1.2.0"
 
 
 def app_data_dir() -> Path:
