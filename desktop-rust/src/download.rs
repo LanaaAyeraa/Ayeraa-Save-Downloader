@@ -61,12 +61,24 @@ pub struct DownloadItem {
 
 impl DownloadItem {
     pub fn new(id: u64, url: String, filename: String, save_path: String, category: String, size_bytes: u64) -> Self {
-        let conn_count = 8;
+        Self::new_with_connections(id, url, filename, save_path, category, size_bytes, 16)
+    }
+
+    pub fn new_with_connections(
+        id: u64,
+        url: String,
+        filename: String,
+        save_path: String,
+        category: String,
+        size_bytes: u64,
+        conn_count: u32,
+    ) -> Self {
+        let count = conn_count.max(1);
         let mut segments = Vec::new();
-        let part_size = if size_bytes > 0 { size_bytes / conn_count as u64 } else { 0 };
-        for i in 0..conn_count {
+        let part_size = if size_bytes > 0 { size_bytes / count as u64 } else { 0 };
+        for i in 0..count {
             let start = i as u64 * part_size;
-            let end = if i == conn_count - 1 { size_bytes } else { (i as u64 + 1) * part_size };
+            let end = if i == count - 1 { size_bytes } else { (i as u64 + 1) * part_size };
             segments.push(SegmentProgress {
                 id: i as usize,
                 start_byte: start,
@@ -89,7 +101,7 @@ impl DownloadItem {
             time_left_sec: None,
             last_try_date: chrono_fallback(),
             resume_supported: true,
-            connection_count: conn_count,
+            connection_count: count,
             segments,
             cancel_flag: None,
             pause_flag: None,

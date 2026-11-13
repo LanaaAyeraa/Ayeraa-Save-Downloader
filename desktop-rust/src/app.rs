@@ -98,12 +98,14 @@ impl IdmApp {
         item1.status = DownloadStatus::Downloading;
         item1.time_left_sec = Some(48);
         item1.last_try_date = "2026-11-13 07:15".to_string();
+        let seg_len = item1.segments.len().max(1);
+        let part = item1.size_bytes / seg_len as u64;
         for (i, seg) in item1.segments.iter_mut().enumerate() {
             seg.active = true;
-            let part = item1.size_bytes / 8;
             seg.start_byte = i as u64 * part;
-            seg.end_byte = (i as u64 + 1) * part;
-            seg.current_byte = seg.start_byte + (part as f64 * 0.72) as u64;
+            seg.end_byte = if i == seg_len - 1 { item1.size_bytes } else { (i as u64 + 1) * part };
+            let variance = (i as f64 * 0.015).min(0.20);
+            seg.current_byte = seg.start_byte + ((seg.end_byte - seg.start_byte) as f64 * (0.68 + variance)).min((seg.end_byte - seg.start_byte) as f64) as u64;
         }
         sample_items.push(Arc::new(Mutex::new(item1)));
 
@@ -197,7 +199,7 @@ impl IdmApp {
             .to_string();
 
         let new_id = (self.downloads.len() as u64) + 1;
-        let mut item = DownloadItem::new(new_id, url, filename, save_path, category, 0);
+        let mut item = DownloadItem::new_with_connections(new_id, url, filename, save_path, category, 0, self.config.max_connections);
 
         if start_now {
             item.status = DownloadStatus::Connecting;
@@ -1049,36 +1051,41 @@ impl eframe::App for IdmApp {
                             .rounding(Rounding::same(8.0_f32))
                             .inner_margin(egui::Margin::same(10.0))
                             .show(ui, |ui| {
-                                for (idx, seg) in item.segments.iter().enumerate() {
-                                    let seg_ratio = if seg.end_byte > seg.start_byte {
-                                        ((seg.current_byte - seg.start_byte) as f32 / (seg.end_byte - seg.start_byte) as f32).clamp(0.0, 1.0)
-                                    } else {
-                                        1.0
-                                    };
-
-                                    ui.horizontal(|ui| {
-                                        ui.label(egui::RichText::new(format!("Lane #{}:", idx + 1)).size(11.0).color(self.theme.text_muted()));
-                                        
-                                        let (rect, _) = ui.allocate_exact_size(Vec2::new(ui.available_width() - 60.0, 12.0), egui::Sense::hover());
-                                        let p = ui.painter();
-                                        p.rect_filled(rect, Rounding::same(6.0_f32), self.theme.card_surface());
-                                        p.rect_stroke(rect, Rounding::same(6.0_f32), Stroke::new(1.0_f32, self.theme.border_color()));
-
-                                        if seg_ratio > 0.0 {
-                                            let filled_w = rect.width() * seg_ratio;
-                                            let fill_rect = egui::Rect::from_min_size(rect.min, Vec2::new(filled_w, rect.height()));
-                                            let col = if seg.active {
-                                                self.theme.accent_terracotta()
+                                egui::ScrollArea::vertical()
+                                    .max_height(240.0)
+                                    .auto_shrink([false, false])
+                                    .show(ui, |ui| {
+                                        for (idx, seg) in item.segments.iter().enumerate() {
+                                            let seg_ratio = if seg.end_byte > seg.start_byte {
+                                                ((seg.current_byte - seg.start_byte) as f32 / (seg.end_byte - seg.start_byte) as f32).clamp(0.0, 1.0)
                                             } else {
-                                                self.theme.accent_emerald()
+                                                1.0
                                             };
-                                            p.rect_filled(fill_rect, Rounding::same(6.0_f32), col);
-                                        }
 
-                                        ui.label(egui::RichText::new(format!("{:.0}%", seg_ratio * 100.0)).size(10.5).color(self.theme.text_muted()));
+                                            ui.horizontal(|ui| {
+                                                ui.label(egui::RichText::new(format!("Lane #{:02}:", idx + 1)).size(11.0).color(self.theme.text_muted()));
+                                                
+                                                let (rect, _) = ui.allocate_exact_size(Vec2::new(ui.available_width() - 60.0, 12.0), egui::Sense::hover());
+                                                let p = ui.painter();
+                                                p.rect_filled(rect, Rounding::same(6.0_f32), self.theme.card_surface());
+                                                p.rect_stroke(rect, Rounding::same(6.0_f32), Stroke::new(1.0_f32, self.theme.border_color()));
+
+                                                if seg_ratio > 0.0 {
+                                                    let filled_w = rect.width() * seg_ratio;
+                                                    let fill_rect = egui::Rect::from_min_size(rect.min, Vec2::new(filled_w, rect.height()));
+                                                    let col = if seg.active {
+                                                        self.theme.accent_terracotta()
+                                                    } else {
+                                                        self.theme.accent_emerald()
+                                                    };
+                                                    p.rect_filled(fill_rect, Rounding::same(6.0_f32), col);
+                                                }
+
+                                                ui.label(egui::RichText::new(format!("{:.0}%", seg_ratio * 100.0)).size(10.5).color(self.theme.text_muted()));
+                                            });
+                                            ui.add_space(2.0);
+                                        }
                                     });
-                                    ui.add_space(2.0);
-                                }
                             });
 
                         ui.add_space(14.0);

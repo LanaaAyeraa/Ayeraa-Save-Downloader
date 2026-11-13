@@ -103,23 +103,24 @@ mod tests {
     #[test]
     fn test_hard_multi_segment_partitioning() {
         let total_size: u64 = 1_450_000_000;
-        let conn_count = 8;
-        let part_size = total_size / conn_count as u64;
+        for &conn_count in &[8, 16, 24, 32] {
+            let part_size = total_size / conn_count as u64;
 
-        let mut segments = Vec::new();
-        for i in 0..conn_count {
-            let start = i as u64 * part_size;
-            let end = if i == conn_count - 1 { total_size } else { (i as u64 + 1) * part_size };
-            segments.push((start, end));
-        }
+            let mut segments = Vec::new();
+            for i in 0..conn_count {
+                let start = i as u64 * part_size;
+                let end = if i == conn_count - 1 { total_size } else { (i as u64 + 1) * part_size };
+                segments.push((start, end));
+            }
 
-        assert_eq!(segments.len(), 8);
-        assert_eq!(segments[0].0, 0);
-        assert_eq!(segments[7].1, total_size);
+            assert_eq!(segments.len(), conn_count as usize);
+            assert_eq!(segments[0].0, 0);
+            assert_eq!(segments[conn_count as usize - 1].1, total_size);
 
-        // Verify continuity (no overlapping and no gap)
-        for i in 0..7 {
-            assert_eq!(segments[i].1, segments[i + 1].0);
+            // Verify continuity (no overlapping and no gap)
+            for i in 0..(conn_count as usize - 1) {
+                assert_eq!(segments[i].1, segments[i + 1].0);
+            }
         }
     }
 
