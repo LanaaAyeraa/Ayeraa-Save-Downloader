@@ -1,0 +1,3 @@
+@echo off
+echo Starting Ayera Downloader Pro (Rust IDM Edition)...
+cargo run --release --manifest-path desktop-rust\Cargo.toml --bin ayera_downloader

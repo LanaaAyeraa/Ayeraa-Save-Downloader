@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "values": [
+    {
+      "name": "max connections default",
+      "group": "network",
+      "value": 8,
+      "unit": "connections",
+      "source": "function 0x4ef8e1"
+    },
+    {
+      "name": "max connections options",
+      "group": "network",
+      "value": "1, 2, 4, 8, 16, 24, 32",
+      "source": "function 0x4ef8e1"
+    },
+    {
+      "name": "speed limiter registry key",
+      "group": "speed",
+      "value": "bUseSpeedLimiter",
+      "source": "function 0x5b9eb0"
+    },
+    {
+      "name": "speed limit registry value",
+      "group": "speed",
+      "value": "psnSpeedLimit",
+      "source": "function 0x5b9eb0"
+    },
+    {
+      "name": "speed limiter default speed",
+      "group": "speed",
+      "value": 50,
+      "unit": "KB/s",
+      "estimated": true
+    },
+    {
+      "name": "category compressed id",
+      "group": "categories",
+      "value": 7,
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category compressed extensions",
+      "group": "categories",
+      "value": "zip rar r0* r1* arj gz sit sitx sea ace bz2 7z",
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category documents id",
+      "group": "categories",
+      "value": 5,
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category documents extensions",
+      "group": "categories",
+      "value": "doc pdf ppt pps docx pptx",
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category music id",
+      "group": "categories",
+      "value": 2,
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category music extensions",
+      "group": "categories",
+      "value": "mp3 wav wma mpa ram ra aac aif m4a tsa",
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category programs id",
+      "group": "categories",
+      "value": 1,
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category programs extensions",
+      "group": "categories",
+      "value": "exe msi",
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category video id",
+      "group": "categories",
+      "value": 3,
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "category video extensions",
+      "group": "categories",
+      "value": "avi mpg mpe mpeg asf wmv mov qt rm mp4 flv m4v webm ogv ogg mkv ts tsv",
+      "source": "function 0x4c9380"
+    },
+    {
+      "name": "main download queue name",
+      "group": "queues",
+      "value": "Main download queue",
+      "source": "function 0x4eefe1"
+    },
+    {
+      "name": "download chunk buffer size",
+      "group": "transfer",
+      "value": 32768,
+      "unit": "bytes",
+      "estimated": true
+    },
+    {
+      "name": "speed update interval",
+      "group": "transfer",
+      "value": 500,
+      "unit": "ms",
+      "estimated": true
+    }
+  ]
+}

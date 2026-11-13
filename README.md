@@ -1,8 +1,34 @@
-# Ayeraa Save Downloader
+# Ayeraa Save Downloader & Ayera Downloader Pro v2.0
 
-Aplikasi Windows untuk mengunduh video & audio dari **semua platform** — mirip y2mate, tapi tanpa iklan dan berjalan langsung di PC Anda.
+Aplikasi download manager serbaguna untuk Windows & Android:
+- **Ayera Downloader Pro v2.0 (Rust IDM Accelerator Core)**: Akselerator download multi-thread segmented berkecepatan tinggi mirip Internet Download Manager (IDM) dengan desain visual hangat **Claude Aesthetic**, context menu klik kanan **Open File Location**, routing kategori otomatis, dan limiter kecepatan.
+- **Ayeraa Save Downloader (Multi-Platform Extractor)**: Unduh video & audio dari YouTube, TikTok, Instagram, Facebook, X/Twitter, dan 1000+ situs lain tanpa iklan.
 
-Didukung: **YouTube, YouTube Music, TikTok, Instagram, Facebook, X/Twitter, Threads, Vimeo, Dailymotion, SoundCloud, Twitch, Reddit, Pinterest, Bilibili**, dan 1000+ situs lain (semua situs yang didukung [yt-dlp](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)).
+---
+
+## 🚀 Ayera Downloader Pro v2.0 (Rust IDM Edition)
+
+Fitur unggulan core desktop Rust yang terinspirasi dari arsitektur IDM:
+- **Multi-Part Segmented Acceleration**: Memecah unduhan file besar menjadi 8 koneksi paralel simultan (`Range: bytes=X-Y`) untuk memaksimalkan bandwidth.
+- **Claude Aesthetic UI**: Tampilan modern Warm Charcoal (`#1A1918`), Card Surface (`#242321`), Terracotta Accent (`#CC5A37`), dan tipografi clean editorial.
+- **Context Menu Klik Kanan**:
+  - 📂 **Open File Location**: Buka Windows Explorer dan langsung menyorot (*highlight*) file yang diunduh (`explorer.exe /select,"<path>"`).
+  - ▶ **Open File**: Langsung putar/buka file yang selesai diunduh.
+  - 📋 **Copy Download Link**: Salin URL unduhan ke clipboard.
+  - ⏸ **Pause / ▶ Resume**: Kontrol status unduhan individual atau serentak.
+  - 🗑 **Delete Download**: Hapus item dari daftar dan disk.
+- **Auto Category Routing**: Otomatis mendeteksi ekstensi dan menyortir file ke direktori khusus:
+  - `Compressed/` (`.zip`, `.rar`, `.7z`, `.tar`, `.gz`)
+  - `Documents/` (`.pdf`, `.doc`, `.docx`, `.epub`, `.txt`)
+  - `Music/` (`.mp3`, `.wav`, `.flac`, `.aac`, `.m4a`)
+  - `Programs/` (`.exe`, `.msi`, `.apk`, `.deb`)
+  - `Video/` (`.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`)
+- **Dynamic Speed Limiter**: Batasi kecepatan download maksimum secara akurat untuk membagi bandwidth.
+- **Persistent State & Queue**: Seluruh antrean tersimpan otomatis di `%APPDATA%\AyeraDownloader\state.json`.
+- **Standalone Setup Installer**: File instalasi ringan tunggal (`ayera_setup.exe` / 5.6 MB) yang otomatis memasang ke `%LOCALAPPDATA%\Programs\Ayera Downloader`, membuat shortcut Desktop & Start Menu, lalu meluncurkan aplikasi.
+- **Hardtested 100% Green**: Dilengkapi test suite `tests/hardtest.rs` dengan validasi range chunking, explorer path parsing, limiter math, dan mock HTTP concurrent download.
+
+---
 
 ## 📥 Download Aplikasi (Siap Pakai)
 
@@ -10,15 +36,43 @@ Pilih installer sesuai kebutuhan Anda:
 
 | Perangkat | Format | Link Download | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **Windows** | **Installer .EXE (Rekomendasi)** | [**Ayeraa-Save-Downloader-Setup.exe**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Setup.exe) (90 MB) | Tinggal klik 2x, otomatis pasang shortcut di Desktop & Start Menu |
-| **Windows** | Portable ZIP | [**Ayeraa-Save-Downloader-Windows.zip**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Windows.zip) (100 MB) | Versi portable tanpa install |
+| **Windows** | **Pro v2.0 Setup (Rust IDM)** | [**ayera_setup.exe**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v2.0.0/ayera_setup.exe) (5.6 MB) | **Rekomendasi Utama!** Akselerator IDM super cepat, Claude Aesthetic, klik kanan open file location |
+| **Windows** | **Pro v2.0 Portable (Rust IDM)** | [**ayera_downloader.exe**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v2.0.0/ayera_downloader.exe) (5.4 MB) | Versi portable tanpa install, langsung jalan |
+| **Windows** | Legacy AllSave Setup | [**Ayeraa-Save-Downloader-Setup.exe**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Setup.exe) (90 MB) | Versi extractor YouTube/Medsos klasik |
 | **Android** | Installer APK | [**Ayeraa-Save-Downloader.apk**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader.apk) (41 MB) | Material You, tanpa iklan, share link langsung |
 | **Android** | APK Pro | [**Ayeraa-Save-Downloader-Pro.apk**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Pro.apk) (65 MB) | Fitur potong audio/video & batch format |
 | **Android (New)** | Project Mobile shadcn/ui | [**Ayeraa-Save-Downloader-Mobile-shadcn.zip**](https://github.com/LanaaAyeraa/Ayeraa-Save-Downloader/releases/download/v1.1.0/Ayeraa-Save-Downloader-Mobile-shadcn.zip) (1 MB) | Engine Mori + UI shadcn/ui (Capacitor) |
 
 ---
 
-## Fitur
+## 🛠 Menjalankan & Membangun Ayera Downloader Pro (Rust)
+
+### Menjalankan Langsung
+```bat
+run_desktop_rust.bat
+```
+Atau manual:
+```bat
+cargo run --release --manifest-path desktop-rust/Cargo.toml --bin ayera_downloader
+```
+
+### Menjalankan Hard Test
+```bat
+cargo test --manifest-path desktop-rust/Cargo.toml
+```
+
+### Membangun Release Binary & Installer
+```bat
+cd desktop-rust
+build.bat
+```
+Hasil build:
+- Binary: `desktop-rust\target\release\ayera_downloader.exe`
+- Standalone Installer: `desktop-rust\target\release\ayera_setup.exe`
+
+---
+
+## Fitur Media Extractor (Legacy Core)
 - Tempel link → **Mulai** → pilih format → **Download**
 - **Video MP4** sampai 4K (estimasi ukuran file untuk tiap resolusi)
 - **Audio MP3** (320/256/192/128 kbps) dan **M4A** kualitas asli

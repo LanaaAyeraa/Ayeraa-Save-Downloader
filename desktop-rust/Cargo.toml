@@ -1,0 +1,21 @@
+[package]
+name = "ayera_downloader"
+version = "2.0.0"
+edition = "2021"
+authors = ["LanaaAyeraa"]
+description = "Ayera Downloader Pro - High-Speed Multi-Threaded Download Manager (Claude Aesthetic Edition)"
+
+[dependencies]
+eframe = "0.30"
+image = { version = "0.25", default-features = false, features = ["png"] }
+ureq = { version = "2.10", default-features = false, features = ["native-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[[bin]]
+name = "ayera_downloader"
+path = "src/main.rs"
+
+[[bin]]
+name = "ayera_setup"
+path = "src/bin/installer.rs"

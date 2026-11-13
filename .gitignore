@@ -27,6 +27,11 @@ mobile/dist/
 mobile/android/.gradle/
 mobile/android/app/build/
 
+# Rust / Desktop Core
+target/
+desktop-rust/target/
+*.pdb
+
 # OS / Editor
 .DS_Store
 Thumbs.db
