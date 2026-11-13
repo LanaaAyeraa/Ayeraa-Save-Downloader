@@ -9,7 +9,7 @@ Aplikasi download manager serbaguna untuk Windows & Android:
 ## 🚀 Ayera Downloader Pro v2.0 (Rust IDM Edition)
 
 Fitur unggulan core desktop Rust yang terinspirasi dari arsitektur IDM:
-- **Multi-Part Segmented Acceleration**: Memecah unduhan file besar menjadi 8 koneksi paralel simultan (`Range: bytes=X-Y`) untuk memaksimalkan bandwidth.
+- **Multi-Part Segmented Acceleration**: Memecah unduhan file besar menjadi 32 koneksi paralel simultan (`Range: bytes=X-Y`) untuk memaksimalkan utilisasi bandwidth hingga saturasi penuh.
 - **Claude Aesthetic UI**: Tampilan modern Warm Charcoal (`#1A1918`), Card Surface (`#242321`), Terracotta Accent (`#CC5A37`), dan tipografi clean editorial.
 - **Context Menu Klik Kanan**:
   - 📂 **Open File Location**: Buka Windows Explorer dan langsung menyorot (*highlight*) file yang diunduh (`explorer.exe /select,"<path>"`).

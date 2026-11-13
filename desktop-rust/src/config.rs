@@ -23,8 +23,8 @@ impl Default for AppConfig {
     fn default() -> Self {
         let base_dir = dirs_fallback();
         Self {
-            max_connections: 16,
-            connection_type: "High speed: Direct connection (Ethernet/Cable) / Wi-Fi / Mobile 4G / 5G".to_string(),
+            max_connections: 32,
+            connection_type: "Ultra high speed: Direct connection (Gigabit Ethernet / Fiber / Wi-Fi 6 / 5G)".to_string(),
             speed_limiter_enabled: false,
             speed_limit_kb: 50,
             default_download_dir: base_dir.clone(),

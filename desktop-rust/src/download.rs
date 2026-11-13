@@ -61,7 +61,7 @@ pub struct DownloadItem {
 
 impl DownloadItem {
     pub fn new(id: u64, url: String, filename: String, save_path: String, category: String, size_bytes: u64) -> Self {
-        Self::new_with_connections(id, url, filename, save_path, category, size_bytes, 16)
+        Self::new_with_connections(id, url, filename, save_path, category, size_bytes, 32)
     }
 
     pub fn new_with_connections(

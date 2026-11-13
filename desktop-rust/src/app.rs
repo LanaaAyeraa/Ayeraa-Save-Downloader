@@ -225,8 +225,54 @@ impl eframe::App for IdmApp {
         if self.frame_count == 0 {
             println!("First frame update() called successfully!");
         }
-        // Apply Claude Warm Minimalist Theme
+        // Apply Anti-Slop High Performance Desktop Theme
         self.theme.apply(ctx);
+
+        // Tactile Keyboard Shortcuts & Ergonomics (amicro interactions)
+        let mut key_action_open_loc = None;
+        let mut key_action_toggle_pause = false;
+        let mut key_action_delete = false;
+
+        ctx.input(|i| {
+            if i.modifiers.ctrl && i.key_pressed(egui::Key::N) {
+                self.show_add_url_dialog = true;
+            }
+            if i.key_pressed(egui::Key::Escape) {
+                self.show_add_url_dialog = false;
+                self.show_options_dialog = false;
+                self.show_scheduler_dialog = false;
+                self.show_details_dialog = false;
+                self.show_about_dialog = false;
+            }
+            if i.key_pressed(egui::Key::Space) {
+                key_action_toggle_pause = true;
+            }
+            if i.key_pressed(egui::Key::Delete) {
+                key_action_delete = true;
+            }
+            if i.key_pressed(egui::Key::Enter) {
+                if let Some(item_arc) = self.get_selected_item() {
+                    key_action_open_loc = Some(item_arc.lock().unwrap().save_path.clone());
+                }
+            }
+        });
+
+        if let Some(path) = key_action_open_loc {
+            open_file_location(&path);
+        }
+        if key_action_toggle_pause {
+            if let Some(item_arc) = self.get_selected_item() {
+                let status = item_arc.lock().unwrap().status.clone();
+                if status == DownloadStatus::Downloading {
+                    self.stop_selected();
+                } else if status != DownloadStatus::Complete {
+                    self.resume_selected();
+                }
+            }
+        }
+        if key_action_delete {
+            self.delete_selected();
+        }
 
         // Keep requesting repaints for smooth active downloads
         let has_active = self.downloads.iter().any(|d| {
@@ -274,39 +320,52 @@ impl eframe::App for IdmApp {
                 .stroke(Stroke::new(1.0_f32, self.theme.border_subtle())))
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    // AYERA Badge
-                    let (badge_rect, _) = ui.allocate_exact_size(Vec2::new(56.0, 22.0), egui::Sense::hover());
-                    let p = ui.painter();
-                    p.rect_filled(badge_rect, Rounding::same(5.0_f32), self.theme.accent_terracotta());
-                    p.text(badge_rect.center(), egui::Align2::CENTER_CENTER, "AYERA", egui::FontId::proportional(11.5), Color32::WHITE);
+                    // AYERA PRO Badge (High-Contrast Electric Emerald)
+                    let (badge_rect, _) = ui.allocate_exact_size(Vec2::new(76.0, 22.0), egui::Sense::hover());
+                    ui.painter().rect_filled(badge_rect, Rounding::same(4.0_f32), self.theme.accent_emerald());
+                    ui.painter().text(badge_rect.center(), egui::Align2::CENTER_CENTER, "AYERA PRO", egui::FontId::proportional(11.0), Color32::WHITE);
 
                     ui.add_space(4.0);
-                    ui.label(egui::RichText::new("Ayera Downloader Pro").strong().size(14.0).color(self.theme.text_primary()));
-                    if ui.add(egui::Button::new(egui::RichText::new("v2.0 Pro").size(11.0).color(self.theme.accent_terracotta())).frame(false)).clicked() {
+                    ui.label(egui::RichText::new("Downloader").strong().size(14.0).color(self.theme.text_primary()));
+                    
+                    // 32-Channel Engine Chip
+                    let (chip_rect, _) = ui.allocate_exact_size(Vec2::new(115.0, 20.0), egui::Sense::hover());
+                    ui.painter().rect_filled(chip_rect, Rounding::same(4.0_f32), self.theme.card_subtle());
+                    ui.painter().rect_stroke(chip_rect, Rounding::same(4.0_f32), Stroke::new(1.0_f32, self.theme.accent_emerald()));
+                    ui.painter().text(chip_rect.center(), egui::Align2::CENTER_CENTER, "⚡ 32-LANE IDM CORE", egui::FontId::monospace(9.5), self.theme.accent_emerald());
+
+                    if ui.add(egui::Button::new(egui::RichText::new("About").size(11.0).color(self.theme.text_muted())).frame(false)).clicked() {
                         self.show_about_dialog = true;
                     }
 
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         // Theme Toggle Button
-                        let mode_label = if self.theme.is_dark { "Light Mode" } else { "Dark Mode" };
+                        let mode_label = if self.theme.is_dark { "☀ Light" } else { "🌙 Dark" };
                         if ui.button(egui::RichText::new(mode_label).size(11.5)).clicked() {
                             self.theme.is_dark = !self.theme.is_dark;
                         }
 
-                        ui.add_space(10.0);
+                        ui.add_space(8.0);
+
+                        // Clear search button if active
+                        if !self.search_query.is_empty() {
+                            if ui.button(egui::RichText::new("✕").size(10.0)).clicked() {
+                                self.search_query.clear();
+                            }
+                        }
 
                         // Quick Search Bar
                         let _search_edit = ui.add(
                             egui::TextEdit::singleline(&mut self.search_query)
-                                .hint_text("Search downloads...")
-                                .desired_width(170.0)
+                                .hint_text("Search downloads (Ctrl+F)...")
+                                .desired_width(180.0)
                         );
                     });
                 });
             });
 
         // ==========================================
-        // 2. MODERN ACTION TOOLBAR
+        // 2. MODERN ACTION TOOLBAR (Anti-Slop Ergonomics)
         // ==========================================
         egui::TopBottomPanel::top("action_toolbar")
             .frame(egui::Frame::none()
@@ -315,10 +374,10 @@ impl eframe::App for IdmApp {
                 .stroke(Stroke::new(1.0_f32, self.theme.border_color())))
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing = Vec2::new(8.0, 0.0);
+                    ui.spacing_mut().item_spacing = Vec2::new(6.0, 0.0);
 
-                    // Primary Add URL Button (Warm Terracotta Pill)
-                    if self.theme.primary_button(ui, "+ Add URL").clicked() {
+                    // Primary Add URL Button (Tactile Electric Emerald)
+                    if self.theme.primary_button(ui, "+ Add URL [Ctrl+N]").clicked() {
                         self.show_add_url_dialog = true;
                     }
 
@@ -331,13 +390,13 @@ impl eframe::App for IdmApp {
                     let has_sel = self.selected_download_id.is_some();
 
                     // Transfer Controls
-                    if self.theme.tool_button(ui, "Resume", has_sel).clicked() {
+                    if self.theme.tool_button(ui, "▶ Resume", has_sel).clicked() {
                         self.resume_selected();
                     }
-                    if self.theme.tool_button(ui, "Pause", has_sel).clicked() {
+                    if self.theme.tool_button(ui, "⏸ Pause", has_sel).clicked() {
                         self.stop_selected();
                     }
-                    if self.theme.tool_button(ui, "Stop All", true).clicked() {
+                    if self.theme.tool_button(ui, "⏹ Stop All", true).clicked() {
                         self.stop_all();
                     }
 
@@ -347,10 +406,10 @@ impl eframe::App for IdmApp {
                     ui.add_space(4.0);
 
                     // Queue & Remove
-                    if self.theme.tool_button(ui, "Remove", has_sel).clicked() {
+                    if self.theme.tool_button(ui, "🗑 Remove", has_sel).clicked() {
                         self.delete_selected();
                     }
-                    if self.theme.tool_button(ui, "Clear Done", true).clicked() {
+                    if self.theme.tool_button(ui, "✓ Clear Done", true).clicked() {
                         self.delete_completed();
                     }
 
@@ -360,14 +419,14 @@ impl eframe::App for IdmApp {
                     ui.add_space(4.0);
 
                     // Config & Details
-                    if self.theme.tool_button(ui, "Settings", true).clicked() {
+                    if self.theme.tool_button(ui, "⚡ 32 Lanes", has_sel).clicked() {
+                        self.show_details_dialog = true;
+                    }
+                    if self.theme.tool_button(ui, "⚙ Settings", true).clicked() {
                         self.show_options_dialog = true;
                     }
-                    if self.theme.tool_button(ui, "Schedule", true).clicked() {
+                    if self.theme.tool_button(ui, "⏱ Schedule", true).clicked() {
                         self.show_scheduler_dialog = true;
-                    }
-                    if self.theme.tool_button(ui, "Details", has_sel).clicked() {
-                        self.show_details_dialog = true;
                     }
                 });
             });
@@ -482,11 +541,11 @@ impl eframe::App for IdmApp {
                             // Active accent indicator bar
                             if is_active {
                                 let bar_rect = egui::Rect::from_min_size(rect.min, Vec2::new(3.0, rect.height()));
-                                painter.rect_filled(bar_rect, Rounding::same(2.0_f32), theme.accent_terracotta());
+                                painter.rect_filled(bar_rect, Rounding::same(2.0_f32), theme.accent_emerald());
                             }
 
                             // Text
-                            let text_col = if is_active { theme.accent_terracotta() } else { theme.text_primary() };
+                            let text_col = if is_active { theme.accent_emerald() } else { theme.text_primary() };
                             let font_id = egui::FontId::proportional(12.5);
                             painter.text(
                                 rect.left_center() + Vec2::new(12.0, 0.0),
@@ -652,8 +711,8 @@ impl eframe::App for IdmApp {
                                                     let item_status = item.status.clone();
 
                                                     resp.context_menu(|ui| {
-                                                        ui.set_min_width(180.0);
-                                                        if ui.button("📂 Open File Location").clicked() {
+                                                        ui.set_min_width(210.0);
+                                                        if ui.button("📂 Open File Location\t[Enter]").clicked() {
                                                             action_open_loc = Some(item_save_path.clone());
                                                             ui.close_menu();
                                                         }
@@ -668,22 +727,22 @@ impl eframe::App for IdmApp {
                                                         }
                                                         ui.separator();
                                                         if item_status == DownloadStatus::Downloading {
-                                                            if ui.button("⏸ Pause Download").clicked() {
+                                                            if ui.button("⏸ Pause Download\t[Space]").clicked() {
                                                                 action_pause_id = Some(item_id);
                                                                 ui.close_menu();
                                                             }
                                                         } else if item_status != DownloadStatus::Complete {
-                                                            if ui.button("▶ Resume Download").clicked() {
+                                                            if ui.button("▶ Resume Download\t[Space]").clicked() {
                                                                 action_resume_id = Some(item_id);
                                                                 ui.close_menu();
                                                             }
                                                         }
-                                                        if ui.button("🗑 Delete from List").clicked() {
+                                                        if ui.button("🗑 Delete from List\t[Del]").clicked() {
                                                             action_delete_id = Some(item_id);
                                                             ui.close_menu();
                                                         }
                                                         ui.separator();
-                                                        if ui.button("📊 Progress Details").clicked() {
+                                                        if ui.button("⚡ 32-Lane Visualizer").clicked() {
                                                             double_clicked_id = Some(item_id);
                                                             ui.close_menu();
                                                         }
@@ -866,14 +925,14 @@ impl eframe::App for IdmApp {
                             ui.add_space(10.0);
                             ui.label("Maximum connection threads per download:");
                             egui::ComboBox::from_id_salt("max_conn_combo")
-                                .selected_text(format!("{} Connections", self.config.max_connections))
+                                .selected_text(format!("{} Connections (Ultra Speed)", self.config.max_connections))
                                 .show_ui(ui, |ui| {
-                                    for count in [1, 2, 4, 8, 16, 24, 32] {
+                                    for count in [1, 2, 4, 8, 16, 24, 32, 64] {
                                         ui.selectable_value(&mut self.config.max_connections, count, format!("{} Connections", count));
                                     }
                                 });
                             ui.add_space(8.0);
-                            ui.label(egui::RichText::new("Note: 8 to 16 threads provide maximum throughput without server rate-limiting.").color(self.theme.text_muted()).size(11.0));
+                            ui.label(egui::RichText::new("Note: 32 threads provide extreme bandwidth saturation and maximum download acceleration.").color(self.theme.text_muted()).size(11.0));
                         }
                         1 => {
                             ui.heading("Speed Limiter");
@@ -998,7 +1057,7 @@ impl eframe::App for IdmApp {
                             .show(ui, |ui| {
                                 ui.horizontal(|ui| {
                                     ui.label(egui::RichText::new("File:").strong().color(self.theme.text_primary()));
-                                    ui.label(egui::RichText::new(&item.filename).color(self.theme.accent_terracotta()).strong());
+                                    ui.label(egui::RichText::new(&item.filename).color(self.theme.accent_emerald()).strong());
                                 });
                                 ui.horizontal(|ui| {
                                     ui.label(egui::RichText::new("URL:").strong().color(self.theme.text_muted()));
@@ -1120,20 +1179,20 @@ impl eframe::App for IdmApp {
                     ui.horizontal(|ui| {
                         let (b_rect, _) = ui.allocate_exact_size(Vec2::new(48.0, 48.0), egui::Sense::hover());
                         let p = ui.painter();
-                        p.rect_filled(b_rect, Rounding::same(10.0_f32), self.theme.accent_terracotta());
+                        p.rect_filled(b_rect, Rounding::same(6.0_f32), self.theme.accent_emerald());
                         p.text(b_rect.center(), egui::Align2::CENTER_CENTER, "AYERA", egui::FontId::proportional(12.0), Color32::WHITE);
                         ui.vertical(|ui| {
                             ui.label(egui::RichText::new("Ayera Downloader Pro").strong().size(15.0).color(self.theme.text_primary()));
-                            ui.label(egui::RichText::new("Version 2.0.0 • High-Speed Multi-Thread Engine").size(11.5).color(self.theme.accent_terracotta()));
+                            ui.label(egui::RichText::new("Version 2.0.0 • 32-Channel IDM Engine").size(11.5).color(self.theme.accent_emerald()));
                             ui.label(egui::RichText::new("Publisher: LanaaAyeraa").size(11.0).color(self.theme.text_muted()));
                         });
                     });
                     ui.add_space(10.0);
                     ui.separator();
                     ui.add_space(6.0);
-                    ui.label("Ultra-fast multi-threaded download manager with intelligent dynamic segmentation, bandwidth limiter, right-click file location explorer, and category routing.");
+                    ui.label("Ultra-fast multi-threaded download manager with 32-lane dynamic segmentation, bandwidth limiter, right-click file location explorer, and category routing.");
                     ui.add_space(6.0);
-                    ui.label(egui::RichText::new("Architecture: Rust + eframe/egui (Claude Minimalist Aesthetic)").size(11.0).color(self.theme.text_muted()));
+                    ui.label(egui::RichText::new("Architecture: Rust + eframe/egui (Anti-Slop High-Performance Desktop UI)").size(11.0).color(self.theme.text_muted()));
                     ui.add_space(14.0);
                     if self.theme.primary_button(ui, "Close").clicked() {
                         self.show_about_dialog = false;

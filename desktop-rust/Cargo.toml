@@ -3,7 +3,7 @@ name = "ayera_downloader"
 version = "2.0.0"
 edition = "2021"
 authors = ["LanaaAyeraa"]
-description = "Ayera Downloader Pro - High-Speed Multi-Threaded Download Manager (Claude Aesthetic Edition)"
+description = "Ayera Downloader Pro - 32-Channel High-Speed Multi-Threaded Download Manager (Anti-Slop Edition)"
 
 [dependencies]
 eframe = "0.30"

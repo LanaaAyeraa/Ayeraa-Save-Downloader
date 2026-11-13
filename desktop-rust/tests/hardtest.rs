@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn test_hard_multi_segment_partitioning() {
         let total_size: u64 = 1_450_000_000;
-        for &conn_count in &[8, 16, 24, 32] {
+        for &conn_count in &[8, 16, 24, 32, 64] {
             let part_size = total_size / conn_count as u64;
 
             let mut segments = Vec::new();
