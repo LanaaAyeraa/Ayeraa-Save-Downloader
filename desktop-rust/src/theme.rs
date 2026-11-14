@@ -102,6 +102,10 @@ impl AntiSlopTheme {
         Color32::from_rgb(0x06, 0xB6, 0xD4) // Electric Cyan (Bandwidth Speed)
     }
 
+    pub fn accent_cyan(&self) -> Color32 {
+        self.accent_sky()
+    }
+
     pub fn accent_amber(&self) -> Color32 {
         Color32::from_rgb(0xF5, 0x9E, 0x0B) // Warning / Paused
     }

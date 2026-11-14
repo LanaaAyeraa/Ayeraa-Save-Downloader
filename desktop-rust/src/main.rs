@@ -1,4 +1,5 @@
 mod app;
+mod bridge;
 mod config;
 mod download;
 mod theme;

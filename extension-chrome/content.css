@@ -1,0 +1,58 @@
+/* Ayera Downloader Pro - Floating Video Panel Styling (Anti-Slop Precision) */
+.ayera-video-panel {
+  position: absolute;
+  z-index: 2147483647; /* Highest z-index to stay above video overlays */
+  display: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.ayera-video-panel.ayera-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ayera-video-panel .ayera-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background-color: #14171F;
+  color: #F8FAFC;
+  border: 1px solid #10B981;
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  user-select: none;
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
+}
+
+.ayera-video-panel .ayera-btn:hover {
+  background-color: #1E2330;
+  border-color: #34D399;
+}
+
+.ayera-video-panel .ayera-btn:active {
+  transform: scale(0.97);
+}
+
+.ayera-video-panel.ayera-success .ayera-btn {
+  background-color: #064E3B;
+  border-color: #10B981;
+  color: #ECFDF5;
+}
+
+.ayera-video-panel .ayera-icon {
+  font-size: 13px;
+  color: #10B981;
+}
+
+.ayera-video-panel.ayera-success .ayera-icon {
+  color: #34D399;
+}

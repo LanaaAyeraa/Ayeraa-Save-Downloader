@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Ayera Downloader - Integration Module",
+  "version": "2.0.0",
+  "description": "Modul integrasi Chrome untuk Ayera Downloader Pro. Menangkap download browser otomatis, klik kanan menu, dan floating video bar mirip IDM.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Ayera Downloader Pro Integration",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "downloads",
+    "contextMenus",
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:18791/*",
+    "http://localhost:18791/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

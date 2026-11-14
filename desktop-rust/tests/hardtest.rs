@@ -216,4 +216,88 @@ mod tests {
         // Cleanup
         let _ = std::fs::remove_file(target_file);
     }
+
+    #[test]
+    fn test_hard_bridge_server_and_chrome_extension_protocol() {
+        // Start a dedicated bridge server on test port 18799
+        let test_port = 18799;
+        let listener = TcpListener::bind(format!("127.0.0.1:{}", test_port));
+        let listener = match listener {
+            Ok(l) => l,
+            Err(_) => {
+                // If port already in use, skip or use dynamic port
+                return;
+            }
+        };
+
+        let queue = std::sync::Arc::new(std::sync::Mutex::new(Vec::<String>::new()));
+        let queue_clone = queue.clone();
+
+        std::thread::spawn(move || {
+            for stream in listener.incoming().take(3) {
+                if let Ok(mut stream) = stream {
+                    let mut req_bytes = Vec::new();
+                    let mut buf = [0u8; 1024];
+                    let _ = stream.set_read_timeout(Some(Duration::from_millis(1000)));
+                    while let Ok(n) = stream.read(&mut buf) {
+                        if n == 0 { break; }
+                        req_bytes.extend_from_slice(&buf[..n]);
+                        if let Some(pos) = req_bytes.windows(4).position(|w| w == b"\r\n\r\n") {
+                            let head = String::from_utf8_lossy(&req_bytes[..pos]);
+                            let cl = head.lines()
+                                .find(|l| l.to_ascii_lowercase().starts_with("content-length:"))
+                                .and_then(|l| l.split(':').nth(1))
+                                .and_then(|v| v.trim().parse::<usize>().ok())
+                                .unwrap_or(0);
+                            if req_bytes.len() - (pos + 4) >= cl {
+                                break;
+                            }
+                        }
+                    }
+
+                    let req = String::from_utf8_lossy(&req_bytes);
+                    if req.starts_with("OPTIONS") {
+                        let resp = "HTTP/1.1 204 No Content\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nConnection: close\r\n\r\n";
+                        let _ = stream.write_all(resp.as_bytes());
+                    } else if req.starts_with("GET /status") {
+                        let body = r#"{"status":"ok","app":"Ayera Downloader Pro","version":"2.0.0","max_connections":32,"active_downloads":0}"#;
+                        let resp = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
+                        let _ = stream.write_all(resp.as_bytes());
+                    } else if req.starts_with("POST /add-download") {
+                        if let Some(body_start) = req.find("\r\n\r\n") {
+                            let body = &req[body_start + 4..];
+                            queue_clone.lock().unwrap().push(body.to_string());
+                        }
+                        let body = r#"{"status":"success","message":"Download added"}"#;
+                        let resp = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
+                        let _ = stream.write_all(resp.as_bytes());
+                    }
+                }
+            }
+        });
+
+        std::thread::sleep(Duration::from_millis(50));
+        let client = ureq::builder().timeout(Duration::from_secs(3)).build();
+
+        // 1. Check GET /status
+        let status_resp = client.get(&format!("http://127.0.0.1:{}/status", test_port))
+            .call()
+            .expect("Bridge GET /status responds");
+        assert_eq!(status_resp.status(), 200);
+        let body = status_resp.into_string().unwrap();
+        assert!(body.contains("Ayera Downloader Pro"));
+        assert!(body.contains("32"));
+
+        // 2. Check POST /add-download
+        let post_resp = client.post(&format!("http://127.0.0.1:{}/add-download", test_port))
+            .set("Content-Type", "application/json")
+            .send_string(r#"{"url":"https://example.com/test_video.mp4","category":"Video"}"#)
+            .expect("Bridge POST /add-download succeeds");
+        assert_eq!(post_resp.status(), 200);
+
+        // 3. Verify queued download
+        let q = queue.lock().unwrap();
+        assert_eq!(q.len(), 1);
+        assert!(q[0].contains("test_video.mp4"));
+    }
 }

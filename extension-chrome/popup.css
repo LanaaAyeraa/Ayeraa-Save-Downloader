@@ -1,0 +1,222 @@
+/* Ayera Downloader Pro - Chrome Extension Popup Styling */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 320px;
+  background-color: #0C0E12;
+  color: #F8FAFC;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  user-select: none;
+}
+
+.popup-container {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #1E2330;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge {
+  background-color: #10B981;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #F8FAFC;
+}
+
+.version {
+  font-size: 10.5px;
+  color: #94A3B8;
+}
+
+/* Connection Status Card */
+.status-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background-color: #14171F;
+  border: 1px solid #282E3E;
+  border-radius: 5px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #94A3B8;
+}
+
+.status-connected .status-dot {
+  background-color: #10B981;
+}
+
+.status-connected {
+  border-color: #10B981;
+}
+
+.status-disconnected .status-dot {
+  background-color: #EF4444;
+}
+
+.status-disconnected {
+  border-color: #EF4444;
+}
+
+.btn-refresh {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.btn-refresh:hover {
+  color: #F8FAFC;
+}
+
+/* Section Cards */
+.section-card {
+  background-color: #14171F;
+  border: 1px solid #1E2330;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.toggle-row input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #10B981;
+}
+
+/* Quick Input */
+.input-group {
+  display: flex;
+  gap: 6px;
+}
+
+.input-group input {
+  flex: 1;
+  background-color: #0C0E12;
+  border: 1px solid #282E3E;
+  border-radius: 4px;
+  color: #F8FAFC;
+  padding: 6px 8px;
+  font-size: 11px;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: #10B981;
+}
+
+.btn-primary {
+  background-color: #10B981;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #059669;
+}
+
+.feedback-text {
+  font-size: 10.5px;
+  color: #10B981;
+  min-height: 14px;
+}
+
+/* Tag Cloud */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  background-color: #1A1E29;
+  border: 1px solid #282E3E;
+  color: #94A3B8;
+  font-size: 9.5px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #64748B;
+  padding-top: 4px;
+}
+
+.link {
+  color: #06B6D4;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

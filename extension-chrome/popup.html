@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Ayera Downloader Pro</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <span class="badge">AYERA PRO</span>
+        <span class="title">Chrome Module</span>
+      </div>
+      <span class="version">v2.0</span>
+    </header>
+
+    <!-- Desktop Bridge Connection Card -->
+    <div id="status-card" class="status-card status-checking">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span id="status-text">Memeriksa Ayera Desktop...</span>
+      </div>
+      <button id="btn-refresh" class="btn-refresh" title="Cek ulang koneksi">⟳</button>
+    </div>
+
+    <!-- Quick Action / Toggles -->
+    <div class="section-card">
+      <label class="toggle-row">
+        <span>Tangkap Unduhan Otomatis (IDM)</span>
+        <input type="checkbox" id="toggle-intercept" checked>
+      </label>
+
+      <label class="toggle-row">
+        <span>Tombol Download Video di Player</span>
+        <input type="checkbox" id="toggle-floating" checked>
+      </label>
+    </div>
+
+    <!-- Quick URL Download Box -->
+    <div class="section-card">
+      <div class="section-title">Kirim URL Cepat (32 Channels)</div>
+      <div class="input-group">
+        <input type="text" id="input-quick-url" placeholder="https://example.com/file.zip">
+        <button id="btn-send-url" class="btn-primary">Kirim ⚡</button>
+      </div>
+      <div id="send-feedback" class="feedback-text"></div>
+    </div>
+
+    <!-- File Types Intercepted -->
+    <div class="section-card">
+      <div class="section-title">Ekstensi File yang Ditangkap</div>
+      <div class="tag-cloud" id="tag-container">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>Ayera Downloader Pro • 32 Lanes</span>
+      <a href="http://127.0.0.1:18791/status" target="_blank" class="link">Port 18791</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

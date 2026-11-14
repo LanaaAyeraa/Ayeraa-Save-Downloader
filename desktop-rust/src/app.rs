@@ -64,6 +64,10 @@ pub struct IdmApp {
 
     pub show_details_dialog: bool,
     pub show_about_dialog: bool,
+    pub show_extension_dialog: bool,
+
+    pub bridge_queue: Arc<Mutex<Vec<crate::bridge::IncomingDownload>>>,
+    pub bridge_active_count: Arc<Mutex<usize>>,
 
     pub speed_limit_shared: Arc<Mutex<Option<u32>>>,
 
@@ -153,6 +157,13 @@ impl IdmApp {
         item4.last_try_date = "2026-11-11 14:22".to_string();
         sample_items.push(Arc::new(Mutex::new(item4)));
 
+        let bridge = crate::bridge::BridgeServer::new(18791);
+        if let Err(e) = bridge.start() {
+            eprintln!("[Ayera Bridge] Warning: Failed to start bridge on port 18791: {}", e);
+        }
+        let bridge_queue = bridge.incoming_queue.clone();
+        let bridge_active_count = bridge.active_count.clone();
+
         Self {
             config,
             downloads: sample_items,
@@ -179,6 +190,10 @@ impl IdmApp {
 
             show_details_dialog: false,
             show_about_dialog: false,
+            show_extension_dialog: false,
+
+            bridge_queue,
+            bridge_active_count,
 
             speed_limit_shared,
 
@@ -227,6 +242,33 @@ impl eframe::App for IdmApp {
         }
         // Apply Anti-Slop High Performance Desktop Theme
         self.theme.apply(ctx);
+
+        // Sync active downloads count with bridge
+        let active_cnt = self.downloads.iter().filter(|d| {
+            let s = d.lock().unwrap().status.clone();
+            s == DownloadStatus::Downloading || s == DownloadStatus::Connecting
+        }).count();
+        if let Ok(mut ac) = self.bridge_active_count.lock() {
+            *ac = active_cnt;
+        }
+
+        // Drain incoming downloads from Chrome Extension / HTTP bridge
+        let incoming_batch: Vec<crate::bridge::IncomingDownload> = {
+            if let Ok(mut q) = self.bridge_queue.lock() {
+                q.drain(..).collect()
+            } else {
+                Vec::new()
+            }
+        };
+        for incoming in incoming_batch {
+            let cat = incoming.category.unwrap_or_else(|| detect_category(&incoming.url, &self.config.categories));
+            let filename = incoming.filename.unwrap_or_else(|| {
+                incoming.url.split('/').last().unwrap_or("download.bin").split('?').next().unwrap_or("download.bin").to_string()
+            });
+            let save_path = format!("{}\\{}\\{}", self.config.default_download_dir, cat, filename);
+            let start_now = incoming.start_now.unwrap_or(true);
+            self.add_new_download(incoming.url, cat, save_path, start_now);
+        }
 
         // Tactile Keyboard Shortcuts & Ergonomics (amicro interactions)
         let mut key_action_open_loc = None;
@@ -333,6 +375,12 @@ impl eframe::App for IdmApp {
                     ui.painter().rect_filled(chip_rect, Rounding::same(4.0_f32), self.theme.card_subtle());
                     ui.painter().rect_stroke(chip_rect, Rounding::same(4.0_f32), Stroke::new(1.0_f32, self.theme.accent_emerald()));
                     ui.painter().text(chip_rect.center(), egui::Align2::CENTER_CENTER, "⚡ 32-LANE IDM CORE", egui::FontId::monospace(9.5), self.theme.accent_emerald());
+
+                    ui.add_space(4.0);
+                    // Chrome Browser Extension Sync Button
+                    if ui.add(egui::Button::new(egui::RichText::new("🌐 CHROME SYNC").monospace().size(10.0).color(self.theme.accent_cyan())).stroke(Stroke::new(1.0_f32, self.theme.accent_cyan()))).clicked() {
+                        self.show_extension_dialog = true;
+                    }
 
                     if ui.add(egui::Button::new(egui::RichText::new("About").size(11.0).color(self.theme.text_muted())).frame(false)).clicked() {
                         self.show_about_dialog = true;
@@ -1197,6 +1245,58 @@ impl eframe::App for IdmApp {
                     if self.theme.primary_button(ui, "Close").clicked() {
                         self.show_about_dialog = false;
                     }
+                    ui.add_space(4.0);
+                });
+        }
+
+        // DIALOG: CHROME EXTENSION INTEGRATION
+        if self.show_extension_dialog {
+            egui::Window::new("🌐 Chrome / Browser Integration")
+                .resizable(false)
+                .collapsible(false)
+                .anchor(egui::Align2::CENTER_CENTER, Vec2::new(0.0, 0.0))
+                .show(ctx, |ui| {
+                    ui.set_min_width(460.0);
+                    ui.add_space(4.0);
+                    ui.horizontal(|ui| {
+                        let (b_rect, _) = ui.allocate_exact_size(Vec2::new(48.0, 48.0), egui::Sense::hover());
+                        let p = ui.painter();
+                        p.rect_filled(b_rect, Rounding::same(6.0_f32), self.theme.accent_cyan());
+                        p.text(b_rect.center(), egui::Align2::CENTER_CENTER, "SYNC", egui::FontId::monospace(12.0), Color32::BLACK);
+                        ui.vertical(|ui| {
+                            ui.label(egui::RichText::new("IDM-Style Browser Integration").strong().size(15.0).color(self.theme.text_primary()));
+                            ui.label(egui::RichText::new("Local Bridge Port: 127.0.0.1:18791 • Active").size(11.5).color(self.theme.accent_emerald()));
+                            ui.label(egui::RichText::new("Auto-catch downloads • Floating Video Bar • Context Menu").size(11.0).color(self.theme.text_muted()));
+                        });
+                    });
+                    ui.add_space(10.0);
+                    ui.separator();
+                    ui.add_space(8.0);
+                    ui.label("Ayera Downloader synchronizes with Google Chrome, Brave, Edge, and Opera via the Ayera Integration Module.");
+                    ui.add_space(8.0);
+                    ui.label(egui::RichText::new("How to install in Chrome:").strong().size(12.0).color(self.theme.accent_cyan()));
+                    ui.label("1. Open chrome://extensions in your browser.");
+                    ui.label("2. Enable 'Developer mode' in the top-right corner.");
+                    ui.label("3. Click 'Load unpacked' and select the extension-chrome folder.");
+                    ui.add_space(12.0);
+                    ui.horizontal(|ui| {
+                        if self.theme.primary_button(ui, "📁 Open Extension Folder").clicked() {
+                            #[cfg(target_os = "windows")]
+                            {
+                                let path = r"C:\Users\Hype 5 X5-2\Documents\New folder\extension-chrome";
+                                let _ = std::process::Command::new("explorer").arg(path).spawn();
+                            }
+                        }
+                        if self.theme.tool_button(ui, "🌐 Open Chrome Extensions Page", true).clicked() {
+                            #[cfg(target_os = "windows")]
+                            {
+                                let _ = std::process::Command::new("cmd").args(&["/c", "start", "chrome", "chrome://extensions/"]).spawn();
+                            }
+                        }
+                        if self.theme.tool_button(ui, "Close", true).clicked() {
+                            self.show_extension_dialog = false;
+                        }
+                    });
                     ui.add_space(4.0);
                 });
         }
